@@ -3,12 +3,17 @@
    Conceito: "Bio-Tech" — curvas orgânicas + precisão digital
    ============================================================ */
 :root {
-  --green-900: #1B3A2D;
-  --green-700: #2D6A4F;
-  --green-600: #40916C;
-  --green-500: #52B788;
-  --green-100: #D8F3DC;
-  --green-50: #F2FCF5;
+  /* Paleta principal — vermelho (antiga escala "verde", agora em tons de
+     vermelho/crimson; os nomes das variáveis foram mantidos para não
+     quebrar as centenas de referências espalhadas pelo código) */
+  --green-900: #5C0B18;
+  --green-800: #7A0F1F;
+  --green-700: #A11429;
+  --green-600: #DC2430;
+  --green-500: #F2465A;
+  --green-400: #FF7A87;
+  --green-100: #FCDCE0;
+  --green-50: #FFF3F4;
 
   --blue-900: #1A2E3F;
   --blue-700: #2C4C6B;
@@ -25,6 +30,7 @@
   --ink-700: #3A3A44;
   --ink-500: #6B6B7A;
   --ink-300: #B0B0C0;
+  --ink-200: #D3D3DD;
   --ink-100: #E6E6EE;
   --ink-50: #F7F7FA;
   --white: #FFFFFF;
@@ -40,8 +46,9 @@
   --shadow-sm: 0 2px 8px rgba(26, 46, 63, 0.08);
   --shadow-md: 0 8px 30px rgba(26, 46, 63, 0.12);
   --shadow-lg: 0 20px 60px rgba(26, 46, 63, 0.18);
-  --shadow-glow-green: 0 0 0 4px rgba(82, 183, 136, 0.25);
+  --shadow-glow-green: 0 0 0 4px rgba(220, 36, 48, 0.25);
   --shadow-glow-blue: 0 0 0 4px rgba(59, 130, 246, 0.20);
+  --shadow-glow-red-lg: 0 12px 34px rgba(161, 20, 41, 0.32);
 
   --ease: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -165,20 +172,27 @@ img { max-width: 100%; display: block; }
   color: var(--ink-900);
   background: var(--ink-100);
 }
-.nav-link.active {
-  color: var(--green-700);
-  background: var(--green-50);
-}
-.nav-link.active::after {
+.nav-link::after {
   content: '';
   position: absolute;
   bottom: 4px;
   left: 50%;
   transform: translateX(-50%);
-  width: 20px;
+  width: 0;
   height: 3px;
   border-radius: 3px;
   background: var(--green-500);
+  transition: width 0.22s var(--ease);
+}
+.nav-link:hover::after {
+  width: 14px;
+}
+.nav-link.active {
+  color: var(--green-700);
+  background: var(--green-50);
+}
+.nav-link.active::after {
+  width: 20px;
 }
 .nav-actions {
   display: flex;
@@ -252,15 +266,30 @@ img { max-width: 100%; display: block; }
   position: relative;
   overflow: hidden;
 }
+.btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 20%, rgba(255, 255, 255, 0.35) 40%, rgba(255, 255, 255, 0.35) 50%, transparent 70%);
+  transform: translateX(-120%);
+  transition: transform 0.55s ease;
+  pointer-events: none;
+}
+.btn:hover::before {
+  transform: translateX(120%);
+}
+.btn:active {
+  transform: scale(0.97);
+}
 .btn-primary {
-  background: var(--green-600);
+  background: linear-gradient(135deg, var(--green-600), var(--green-700));
   color: white;
   box-shadow: var(--shadow-sm);
 }
 .btn-primary:hover {
-  background: var(--green-700);
+  background: linear-gradient(135deg, var(--green-500), var(--green-600));
   transform: translateY(-2px) scale(1.02);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-md), 0 0 0 4px rgba(220, 36, 48, 0.14);
 }
 .btn-secondary {
   background: var(--blue-600);
@@ -313,7 +342,7 @@ img { max-width: 100%; display: block; }
 }
 .card-hover:hover {
   transform: translateY(-6px);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-md), 0 0 0 1px rgba(220, 36, 48, 0.10);
   border-color: var(--green-100);
 }
 .card-pad {
@@ -870,6 +899,187 @@ tbody tr:last-child td {
   border-radius: 50%;
   background: var(--green-400);
   opacity: 0.25;
+}
+
+/* ============================================================
+   TEXTO EM DEGRADÊ ANIMADO
+   ============================================================ */
+.gradient-text-anim {
+  background-size: 200% auto;
+  animation: gradientShift 6s ease infinite;
+}
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ============================================================
+   DROPZONE — upload de imagem/documentos (cadastro de projeto)
+   ============================================================ */
+.dropzone {
+  border: 2px dashed var(--ink-200);
+  border-radius: var(--radius-md);
+  background: var(--ink-50);
+  padding: 30px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.22s var(--ease);
+  position: relative;
+}
+.dropzone:hover, .dropzone.drag-over {
+  border-color: var(--green-600);
+  background: var(--green-50);
+  transform: translateY(-2px);
+}
+.dropzone .dropzone-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  margin: 0 auto 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--green-100);
+  color: var(--green-700);
+  transition: transform 0.25s var(--ease);
+}
+.dropzone:hover .dropzone-icon {
+  transform: scale(1.08) rotate(-4deg);
+}
+.dropzone .dropzone-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--ink-900);
+  margin-bottom: 4px;
+}
+.dropzone .dropzone-hint {
+  font-size: 12px;
+  color: var(--ink-500);
+}
+.dropzone.has-file {
+  border-style: solid;
+  border-color: var(--green-500);
+  background: var(--green-50);
+}
+.dropzone-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+}
+.dropzone-preview img {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+.dropzone-remove {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-500);
+  background: var(--white);
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+}
+.dropzone-remove:hover {
+  color: var(--green-700);
+  background: var(--green-100);
+}
+
+/* ============================================================
+   CONTADOR DE CARACTERES
+   ============================================================ */
+.char-counter {
+  font-size: 12px;
+  color: var(--ink-300);
+  text-align: right;
+  margin-top: 6px;
+}
+.char-counter.ok { color: var(--green-600); font-weight: 600; }
+.char-counter.warn { color: var(--orange-600); font-weight: 600; }
+
+/* ============================================================
+   CAIXA DE CREDENCIAIS (chave + senha do projeto)
+   ============================================================ */
+.credential-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--ink-900);
+  color: white;
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  margin-bottom: 12px;
+}
+.credential-box .credential-meta {
+  min-width: 0;
+}
+.credential-box .credential-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-300);
+  margin-bottom: 4px;
+}
+.credential-box .credential-value {
+  font-family: 'Inter', monospace;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.03em;
+  overflow-wrap: anywhere;
+}
+.credential-copy {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  background: rgba(255, 255, 255, 0.12);
+  flex-shrink: 0;
+  transition: all 0.18s var(--ease);
+}
+.credential-copy:hover {
+  background: var(--green-600);
+  transform: scale(1.08);
+}
+
+/* ============================================================
+   ANIMAÇÃO DE SUCESSO (check dentro de círculo)
+   ============================================================ */
+.success-badge {
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--green-500), var(--green-700));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  margin: 4px auto 18px;
+  box-shadow: var(--shadow-glow-red-lg);
+  animation: successPop 0.5s var(--ease);
+}
+@keyframes successPop {
+  0% { transform: scale(0.4); opacity: 0; }
+  60% { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+/* ============================================================
+   PADRÃO DECORATIVO (fundo pontilhado sutil)
+   ============================================================ */
+.bg-dot-grid {
+  background-image: radial-gradient(rgba(220, 36, 48, 0.16) 1.5px, transparent 1.5px);
+  background-size: 22px 22px;
 }
 
 /* ============================================================

@@ -27,6 +27,27 @@ const PERIODOS = [
   { value: 'tarde', label: 'Tarde' },
   { value: 'noite', label: 'Noite' },
 ];
+// Objetivos de Desenvolvimento Sustentável (ONU) — usados no cadastro de
+// projetos para indicar a qual ODS o projeto está relacionado.
+const ODS_LIST = [
+  '1 · Erradicação da Pobreza',
+  '2 · Fome Zero e Agricultura Sustentável',
+  '3 · Saúde e Bem-Estar',
+  '4 · Educação de Qualidade',
+  '5 · Igualdade de Gênero',
+  '6 · Água Potável e Saneamento',
+  '7 · Energia Limpa e Acessível',
+  '8 · Trabalho Decente e Crescimento Econômico',
+  '9 · Indústria, Inovação e Infraestrutura',
+  '10 · Redução das Desigualdades',
+  '11 · Cidades e Comunidades Sustentáveis',
+  '12 · Consumo e Produção Responsáveis',
+  '13 · Ação Contra a Mudança Global do Clima',
+  '14 · Vida na Água',
+  '15 · Vida Terrestre',
+  '16 · Paz, Justiça e Instituições Eficazes',
+  '17 · Parcerias e Meios de Implementação',
+];
 
 // ============================================================
 // ICONES
@@ -79,6 +100,8 @@ const ICON = {
   send: `<path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4 20-7Z"/>`,
   refresh: `<path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/>`,
   external: `<path d="M14 4h6v6"/><path d="M20 4 10 14"/><path d="M18 13v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5"/>`,
+  key: `<circle cx="8" cy="15" r="4"/><path d="M10.8 12.2 19 4M15 9l3 3M18 6l3 3"/>`,
+  copy: `<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>`,
 };
 
 function icon(name, size = 20, strokeW = 2) {
@@ -88,14 +111,14 @@ function icon(name, size = 20, strokeW = 2) {
 function signatureMark(size = 32) {
   return `<svg width="${size}" height="${size}" viewBox="0 0 40 40" fill="none">
     <defs><linearGradient id="lcg" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#40916C"/><stop offset="0.55" stop-color="#3E6B8C"/><stop offset="1" stop-color="#E76F51"/>
+      <stop stop-color="#DC2430"/><stop offset="0.55" stop-color="#3E6B8C"/><stop offset="1" stop-color="#E76F51"/>
     </linearGradient></defs>
     <path d="M20 3C11 3 4 9 4 20c0 9 6 15 16 17 10-2 16-8 16-17C36 9 29 3 20 3Z" fill="url(#lcg)" opacity="0.12"/>
     <path d="M20 6c-8 1-13 6-13 14 0 7 4.5 12 13 14 8.5-2 13-7 13-14 0-8-5-13-13-14Z" stroke="url(#lcg)" stroke-width="2.2"/>
-    <circle cx="20" cy="14" r="2.2" fill="#40916C"/>
+    <circle cx="20" cy="14" r="2.2" fill="#DC2430"/>
     <circle cx="14" cy="22" r="2.2" fill="#E76F51"/>
     <circle cx="26" cy="22" r="2.2" fill="#3E6B8C"/>
-    <circle cx="20" cy="28" r="2.2" fill="#40916C"/>
+    <circle cx="20" cy="28" r="2.2" fill="#DC2430"/>
     <path d="M20 16v4M20 20l-5 2M20 20l5 2" stroke="url(#lcg)" stroke-width="1.6" stroke-linecap="round"/>
   </svg>`;
 }
@@ -213,9 +236,17 @@ function normalizeProject(row) {
     createdAt: row.created_at,
     github: row.github || '',
     site: row.site || '',
+    ods: row.ods || '',
+    links: row.links || '',
+    membros: safeParseArray(row.membros),
+    document: row.documento || null,
     files: [],
     comments: safeParseArray(row.comments),
   };
+}
+function normalizeTeacher(row) {
+  if (!row) return row;
+  return { id: row.id, name: row.nome, course: row.curso, avatar: row.avatar || (row.nome ? initials(row.nome) : '??') };
 }
 function normalizeCategory(row) {
   if (!row) return row;
@@ -296,6 +327,17 @@ class DataManager {
     }
   }
 
+  // Professores (orientadores) — usado no select do cadastro de projetos
+  async getTeachers() {
+    try {
+      const data = await this._fetch('teachers.php');
+      return data.map(normalizeTeacher);
+    } catch (e) {
+      console.warn('Fallback professores', e);
+      return MOCK.teachers;
+    }
+  }
+
   // Projetos
   async getProjects(filters = {}) {
     try {
@@ -353,6 +395,25 @@ class DataManager {
     return await this._fetch('projects/delete.php', {
       method: 'DELETE',
       body: JSON.stringify({ id, usuario_id }),
+    });
+  }
+
+  // Busca um projeto pela chave (id) + senha de acesso gerados no cadastro.
+  // Usado em "Encontrar meu projeto".
+  async findProjectByKey(chave, senha) {
+    if (!this.useApi) throw new Error('Indisponível no modo offline');
+    return await this._fetch('projects/find.php', {
+      method: 'POST',
+      body: JSON.stringify({ chave, senha }),
+    });
+  }
+
+  // Usa a chave + senha do projeto para entrar nele como integrante.
+  async joinProjectAsMember(chave, senha, usuario_id) {
+    if (!this.useApi) throw new Error('Indisponível no modo offline');
+    return await this._fetch('projects/join.php', {
+      method: 'POST',
+      body: JSON.stringify({ chave, senha, usuario_id }),
     });
   }
 
@@ -647,6 +708,7 @@ const state = {
   news: [],
   schedule: [],
   categories: [],
+  teachers: [],
   offices: [],
   notifications: [],
   users: [],
@@ -664,12 +726,17 @@ function fmtDate(d) { const dt = new Date(d + 'T00:00:00'); return dt.toLocaleDa
 function fmtDateLong(d) { const dt = new Date(d + 'T00:00:00'); return dt.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' }); }
 function categoryOf(id) { return state.categories.find(c => c.id === id) || MOCK.categories.find(c => c.id === id); }
 function teacherOf(id, fallbackName) {
-  const found = MOCK.teachers.find(t => t.id === id);
+  const found = (state.teachers && state.teachers.length ? state.teachers : MOCK.teachers).find(t => t.id === id);
   if (found) return found;
   if (fallbackName) return { name: fallbackName, avatar: initials(fallbackName), course: '' };
   return null;
 }
 function standOf(id) { return MOCK.stands.find(s => s.id === id); }
+function formatFileSize(bytes) {
+  if (!bytes && bytes !== 0) return '';
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
 function initials(name) { return name ? name.split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase() : '??'; }
 // Retorna o HTML do avatar de um usuário: se ele tiver enviado uma foto
 // (avatar salvo como Data URL base64), mostra a imagem; caso contrário,
@@ -1061,6 +1128,7 @@ async function loadAllData() {
   try {
     state.categories = await dataManager.getCategories();
     state.projects = await dataManager.getProjects();
+    state.teachers = await dataManager.getTeachers();
     state.news = await dataManager.getNews();
     state.schedule = await dataManager.getSchedule();
     state.offices = await dataManager.getOffices(state.currentUser?.id);
@@ -1098,7 +1166,7 @@ function pageHome() {
           <div>
             <div class="eyebrow">${icon('leaf', 14)} 6 a 7 de abril de 2026 · ETEC Maria Cristina Medeiros</div>
             <h1 style="font-size:clamp(34px,5vw,58px);font-weight:900;line-height:1.05;margin-bottom:20px;">
-              Feira Tecnológica <br><span style="background:linear-gradient(135deg,var(--green-600),var(--blue-600),var(--orange-600));-webkit-background-clip:text;background-clip:text;color:transparent;">e Sustentável</span>
+              Feira Tecnológica <br><span class="gradient-text-anim" style="background:linear-gradient(135deg,var(--green-600),var(--blue-600),var(--orange-600),var(--green-600));-webkit-background-clip:text;background-clip:text;color:transparent;">e Sustentável</span>
             </h1>
             <p style="font-size:17.5px;color:var(--ink-500);max-width:520px;line-height:1.65;margin-bottom:32px;">
               A plataforma oficial que reúne todos os projetos, cronograma, mapa e votação popular da maior feira de inovação da nossa escola.
@@ -1244,7 +1312,10 @@ function pageProjects() {
         <h1 class="section-title" style="margin-bottom:6px;">Catálogo de Projetos</h1>
         <p class="section-sub">Explore todos os projetos inscritos na Feira Tech 2026.</p>
       </div>
-      ${state.currentUser?.role === 'aluno' ? `<a href="#/area-aluno" class="btn btn-secondary">${icon('plus', 17)} Cadastrar projeto</a>` : ''}
+      <div class="flex gap-10" style="flex-wrap:wrap;">
+        <button class="btn btn-outline" onclick="openFindProjectModal()">${icon('search', 17)} Encontrar meu projeto</button>
+        ${state.currentUser?.role === 'aluno' ? `<a href="#/cadastro-projeto" class="btn btn-secondary">${icon('plus', 17)} Cadastrar projeto</a>` : ''}
+      </div>
     </div>
     <div class="card card-pad" style="margin:28px 0;position:sticky;top:88px;z-index:50;background:rgba(255,255,255,0.85);backdrop-filter:blur(12px);">
       <div class="input-icon-wrap" style="margin-bottom:16px;">
@@ -1348,12 +1419,19 @@ function pageProjectDetail(id) {
         </div>
         <div id="tab-3" class="tab-panel" style="display:none;">
           <div class="flex-col gap-12" style="display:flex;">
+            ${p.document ? `
+              <div class="card card-pad flex items-center gap-12" style="flex-direction:row;">
+                ${icon('file', 20)}
+                <div style="min-width:0;flex:1;"><div style="font-weight:600;font-size:14px;">Documentação do projeto</div><div style="font-size:12px;color:var(--ink-500);">Relatório ou especificações enviados no cadastro</div></div>
+                <a href="${p.document}" download="documentacao-${p.id}" class="btn btn-ghost btn-sm">${icon('download', 15)}</a>
+              </div>` : ''}
             ${(p.files && p.files.length) ? p.files.map(f => `
               <div class="card card-pad flex items-center gap-12" style="flex-direction:row;">
                 ${icon(f.type.startsWith('image') ? 'image' : f.type.startsWith('video') ? 'video' : 'file', 20)}
                 <div style="min-width:0;flex:1;"><div style="font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(f.name)}</div><div style="font-size:12px;color:var(--ink-500);">${(f.size / 1024).toFixed(0)} KB</div></div>
                 <a href="${f.dataUrl}" download="${escapeHtml(f.name)}" class="btn btn-ghost btn-sm">${icon('download', 15)}</a>
-              </div>`).join('') : `<div class="empty-state" style="padding:32px;">${icon('file', 32)}<h3 style="font-size:14.5px;">Nenhum arquivo anexado</h3><p style="font-size:13px;">A equipe ainda não enviou documentos.</p></div>`}
+              </div>`).join('') : ''}
+            ${(!p.document && !(p.files && p.files.length)) ? `<div class="empty-state" style="padding:32px;">${icon('file', 32)}<h3 style="font-size:14.5px;">Nenhum arquivo anexado</h3><p style="font-size:13px;">A equipe ainda não enviou documentos.</p></div>` : ''}
           </div>
         </div>
         <hr class="divider" style="margin:32px 0;">
@@ -1386,13 +1464,16 @@ function pageProjectDetail(id) {
           <div style="font-weight:700;font-size:14px;margin-bottom:14px;">Informações</div>
           <div class="flex justify-between" style="font-size:13.5px;padding:8px 0;border-bottom:1px solid var(--ink-100);"><span style="color:var(--ink-500);">Curso</span><strong>${escapeHtml(p.course)}</strong></div>
           <div class="flex justify-between" style="font-size:13.5px;padding:8px 0;border-bottom:1px solid var(--ink-100);"><span style="color:var(--ink-500);">Categoria</span><strong>${cat?.name || '?'}</strong></div>
+          ${p.ods ? `<div class="flex justify-between" style="font-size:13.5px;padding:8px 0;border-bottom:1px solid var(--ink-100);"><span style="color:var(--ink-500);">ODS</span><strong style="text-align:right;max-width:60%;">${escapeHtml(p.ods)}</strong></div>` : ''}
           <div class="flex justify-between" style="font-size:13.5px;padding:8px 0;border-bottom:1px solid var(--ink-100);"><span style="color:var(--ink-500);">Estande</span><strong>${stand?.code || '?'}</strong></div>
           <div class="flex justify-between" style="font-size:13.5px;padding:8px 0;"><span style="color:var(--ink-500);">Inscrito em</span><strong>${fmtDate(p.createdAt)}</strong></div>
         </div>
         <div class="flex gap-8">
           ${p.github ? `<a href="${p.github}" target="_blank" class="btn btn-outline btn-sm" style="flex:1;">${icon('gitHub', 15)} GitHub</a>` : ''}
           ${p.site ? `<a href="${p.site}" target="_blank" class="btn btn-outline btn-sm" style="flex:1;">${icon('globe', 15)} Site</a>` : ''}
+          ${(p.links && /^https?:\/\//i.test(p.links)) ? `<a href="${escapeHtml(p.links)}" target="_blank" class="btn btn-outline btn-sm" style="flex:1;">${icon('external', 15)} Link do projeto</a>` : ''}
         </div>
+        ${(p.links && !/^https?:\/\//i.test(p.links)) ? `<div class="field-hint" style="margin-top:8px;">${icon('external', 12)} ${escapeHtml(p.links)}</div>` : ''}
         <a href="#/mapa" class="btn btn-ghost btn-block" style="margin-top:8px;">${icon('map', 16)} Ver no mapa da feira</a>
       </div>
     </div>
@@ -1531,7 +1612,7 @@ function renderCategoryVotesChart() {
     type: 'doughnut',
     data: {
       labels: state.categories.map(c => c.name),
-      datasets: [{ data, backgroundColor: ['#40916C', '#3E6B8C', '#E76F51', '#52B788', '#5B8FAF', '#F48C6E'], borderWidth: 0 }]
+      datasets: [{ data, backgroundColor: ['#DC2430', '#3E6B8C', '#E76F51', '#F2465A', '#5B8FAF', '#F48C6E'], borderWidth: 0 }]
     },
     options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 }, padding: 12 } } }, cutout: '62%' }
   });
@@ -1703,7 +1784,7 @@ function pageProfile() {
         <div class="card card-pad">
           <div class="flex justify-between items-center" style="margin-bottom:14px;">
             <h3 style="font-size:16px;margin:0;">${icon('cpu', 17)} Meus projetos (${myProjects.length})</h3>
-            <a href="#/area-aluno" class="btn btn-secondary btn-sm">${icon('plus', 15)} Novo projeto</a>
+            <a href="#/cadastro-projeto" class="btn btn-secondary btn-sm">${icon('plus', 15)} Novo projeto</a>
           </div>
           ${myProjects.length ? myProjects.map(p => `
             <div class="flex justify-between items-center" style="padding:10px 0;border-bottom:1px solid var(--ink-100);">
@@ -1784,7 +1865,7 @@ function requireLoginPage(msg) {
 function pageStudentArea() {
   if (!state.currentUser || state.currentUser.role !== 'aluno') return requireLoginPage('Área exclusiva para alunos.');
   const u = state.currentUser;
-  const myProjects = state.projects.filter(p => p.criadoPor === u.id);
+  const myProjects = state.projects.filter(p => p.criadoPor === u.id || (p.membros || []).includes(u.id));
   const offices = state.offices || [];
   const attended = offices.filter(o => o.inscrito);
   const alreadyVotedOffice = offices.find(o => o.votou);
@@ -1803,74 +1884,38 @@ function pageStudentArea() {
     </div>
 
     <!-- CADASTRO DE PROJETO -->
-    <div class="card card-pad" style="margin-bottom:28px;">
-      <h3 style="font-size:17px;margin-bottom:6px;">${icon('plus', 18)} Cadastrar novo projeto</h3>
-      <p class="field-hint" style="margin-bottom:18px;">Informe o nome do projeto, sua turma, seu curso e o período. Seu projeto será publicado imediatamente no catálogo — sem necessidade de aprovação.</p>
-      <form onsubmit="return handleCreateProjectSubmit(event)">
-        <div class="field"><label>Nome do projeto *</label><input class="input" name="nome" required placeholder="Ex: EcoWatt — Monitor Inteligente de Energia"></div>
-        <div class="field">
-          <label>Foto de capa (opcional)</label>
-          <div class="flex items-center gap-12">
-            <div id="new-project-cover-preview" style="width:110px;height:70px;border-radius:var(--radius-md);background:var(--ink-50);border:1px dashed var(--ink-200);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;color:var(--ink-300);">${icon('file', 22)}</div>
-            <label class="btn btn-outline btn-sm" style="cursor:pointer;">
-              ${icon('upload', 15)} Escolher imagem
-              <input type="file" accept="image/*" style="display:none;" onchange="handleNewProjectCoverChange(event)">
-            </label>
-          </div>
-          <div class="field-hint" style="margin-top:6px;">JPG ou PNG, até 2MB. Você pode trocar depois em "Editar projeto".</div>
+    <div class="card card-pad" style="margin-bottom:28px;background:linear-gradient(120deg,var(--green-700),var(--green-900));color:white;position:relative;overflow:hidden;">
+      <div class="blob" style="width:220px;height:220px;top:-90px;right:-40px;background:rgba(255,255,255,0.10);"></div>
+      <div style="position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;">
+        <div>
+          <h3 style="font-size:18px;margin-bottom:6px;">${icon('plus', 18)} Cadastrar novo projeto</h3>
+          <p style="font-size:13.5px;opacity:0.88;max-width:460px;">Preencha as informações do seu projeto em uma página dedicada e receba uma chave e senha para adicionar outros integrantes.</p>
         </div>
-        <div class="grid" style="grid-template-columns:1fr 1fr 1fr;gap:16px;">
-          <div class="field"><label>Turma *</label><input class="input" name="turma" required placeholder="Ex: 3ºDS-A" value="${escapeHtml(u.turma || '')}"></div>
-          <div class="field"><label>Curso *</label>
-            <select class="select" name="curso" required>
-              <option value="">Selecione…</option>
-              ${COURSES.map(c => `<option value="${c}" ${u.curso === c ? 'selected' : ''}>${c}</option>`).join('')}
-            </select>
-          </div>
-          <div class="field"><label>Período *</label>
-            <select class="select" name="periodo" required>
-              <option value="">Selecione…</option>
-              ${PERIODOS.map(p => `<option value="${p.value}">${p.label}</option>`).join('')}
-            </select>
-          </div>
-        </div>
-        <details style="margin-bottom:18px;">
-          <summary style="cursor:pointer;font-size:13.5px;font-weight:600;color:var(--green-700);margin-bottom:10px;">+ Adicionar mais detalhes (opcional)</summary>
-          <div style="margin-top:14px;">
-            <div class="field"><label>Resumo curto</label><input class="input" name="resumo" placeholder="Uma frase sobre o projeto"></div>
-            <div class="field"><label>Descrição</label><textarea class="textarea" name="descricao" placeholder="Descreva o projeto em detalhes…"></textarea></div>
-            <div class="field"><label>Categoria</label>
-              <select class="select" name="categoria_id">
-                <option value="">Sem categoria</option>
-                ${state.categories.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('')}
-              </select>
-            </div>
-            <div class="field"><label>Integrantes da equipe (separados por vírgula)</label><input class="input" name="equipe" placeholder="Ex: Maria Silva, João Souza"></div>
-            <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px;">
-              <div class="field"><label>GitHub</label><input class="input" name="github" placeholder="https://github.com/..."></div>
-              <div class="field"><label>Site</label><input class="input" name="site" placeholder="https://..."></div>
-            </div>
-          </div>
-        </details>
-        <button type="submit" class="btn btn-primary btn-lg">${icon('check', 17)} Cadastrar projeto</button>
-      </form>
+        <a href="#/cadastro-projeto" class="btn btn-lg" style="background:white;color:var(--green-700);flex-shrink:0;">${icon('arrowRight', 17)} Ir para o cadastro</a>
+      </div>
     </div>
 
     <!-- MEUS PROJETOS -->
     <div class="card card-pad" style="margin-bottom:28px;">
       <h3 style="font-size:17px;margin-bottom:16px;">${icon('cpu', 18)} Meus projetos</h3>
-      ${myProjects.length ? `<div class="flex-col gap-12" style="display:flex;">${myProjects.map(p => `
+      ${myProjects.length ? `<div class="flex-col gap-12" style="display:flex;">${myProjects.map(p => {
+        const isOwner = p.criadoPor === u.id;
+        return `
         <div class="card card-pad" style="flex-direction:row;display:flex;align-items:center;justify-content:space-between;gap:12px;">
           <div style="min-width:0;">
-            <a href="#/projeto/${p.id}" style="font-weight:700;font-size:15px;">${escapeHtml(p.name)}</a>
+            <div class="flex items-center gap-8" style="flex-wrap:wrap;">
+              <a href="#/projeto/${p.id}" style="font-weight:700;font-size:15px;">${escapeHtml(p.name)}</a>
+              <span class="badge ${isOwner ? 'badge-green' : 'badge-blue'}" style="font-size:10.5px;padding:3px 10px;">${isOwner ? 'Criador' : 'Integrante'}</span>
+            </div>
             <div style="font-size:12.5px;color:var(--ink-500);margin-top:4px;">${escapeHtml(p.course)} · Turma ${escapeHtml(p.turma || '-')} · ${PERIODOS.find(x => x.value === p.periodo)?.label || ''}</div>
           </div>
           <div class="flex items-center gap-8" style="flex-shrink:0;">
             <span class="badge badge-green">${p.votes || 0} votos</span>
-            <button class="btn btn-ghost btn-sm" onclick="openEditProjectModal('${p.id}')">${icon('edit', 15)}</button>
-            <button class="btn btn-ghost btn-sm" style="color:var(--orange-600);" onclick="deleteMyProject('${p.id}')">${icon('trash', 15)}</button>
+            ${isOwner ? `<button class="btn btn-ghost btn-sm" onclick="openEditProjectModal('${p.id}')">${icon('edit', 15)}</button>
+            <button class="btn btn-ghost btn-sm" style="color:var(--orange-600);" onclick="deleteMyProject('${p.id}')">${icon('trash', 15)}</button>` : ''}
           </div>
-        </div>`).join('')}</div>` : `<div class="empty-state" style="padding:32px;">${icon('cpu', 32)}<h3 style="font-size:14.5px;">Nenhum projeto cadastrado ainda</h3><p style="font-size:13px;">Use o formulário acima para cadastrar seu primeiro projeto.</p></div>`}
+        </div>`;
+      }).join('')}</div>` : `<div class="empty-state" style="padding:32px;">${icon('cpu', 32)}<h3 style="font-size:14.5px;">Nenhum projeto cadastrado ainda</h3><p style="font-size:13px;">Use o botão acima para cadastrar seu primeiro projeto, ou "Encontrar meu projeto" no catálogo para entrar como integrante.</p></div>`}
     </div>
 
     <!-- VOTAÇÃO DE PROJETOS -->
@@ -1925,55 +1970,365 @@ function pageStudentArea() {
   </div>`;
 }
 
-let pendingNewProjectCoverDataUrl = null;
-function handleNewProjectCoverChange(e) {
+// CADASTRO DE PROJETO — página dedicada
+let pendingCadastro = { cover: null, coverName: '', coverSize: 0, doc: null, docName: '', docSize: 0 };
+function cadastroDraftKey() { return `feiratech_draft_projeto_${state.currentUser ? state.currentUser.id : 'anon'}`; }
+function saveCadastroDraft(showToast = true) {
+  const form = $('#cadastro-projeto-form');
+  if (!form) return;
+  const f = form.elements;
+  const draft = {
+    nome: f.nome.value, ods: f.ods.value, descricao: f.descricao.value,
+    periodo: f.periodo.value, turma: f.turma.value,
+    professor: f.professor.value, links: f.links.value,
+  };
+  try {
+    localStorage.setItem(cadastroDraftKey(), JSON.stringify(draft));
+    if (showToast) toast('Rascunho salvo neste dispositivo.', 'info');
+  } catch (e) { if (showToast) toast('Não foi possível salvar o rascunho.', 'error'); }
+}
+function loadCadastroDraft() {
+  try { const raw = localStorage.getItem(cadastroDraftKey()); return raw ? JSON.parse(raw) : null; }
+  catch (e) { return null; }
+}
+function clearCadastroDraft() {
+  try { localStorage.removeItem(cadastroDraftKey()); } catch (e) { /* noop */ }
+}
+
+function pageCadastroProjeto() {
+  if (!state.currentUser || state.currentUser.role !== 'aluno') return requireLoginPage('Apenas alunos podem cadastrar projetos.');
+  const u = state.currentUser;
+
+  // O curso do aluno é obrigatório no banco, mas não aparece no formulário
+  // de cadastro (ele já vem do perfil). Se o perfil ainda não tiver curso
+  // definido, pedimos para completar antes de seguir.
+  if (!u.curso) {
+    return `<div class="page section container" style="text-align:center;padding:100px 20px;">
+      <div style="width:80px;height:80px;border-radius:50%;background:var(--green-100);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;color:var(--green-700);">${icon('cpu', 34)}</div>
+      <h2 style="margin-bottom:10px;">Complete seu perfil antes de cadastrar um projeto</h2>
+      <p class="section-sub" style="margin:0 auto 28px;">Precisamos saber o seu curso para vincular ao projeto. Isso leva só um minuto.</p>
+      <a href="#/perfil" class="btn btn-primary btn-lg">${icon('user', 18)} Completar perfil</a>
+    </div>`;
+  }
+
+  pendingCadastro = { cover: null, coverName: '', coverSize: 0, doc: null, docName: '', docSize: 0 };
+  const draft = loadCadastroDraft();
+  const teachers = (state.teachers && state.teachers.length ? state.teachers : MOCK.teachers);
+  const initialDescLen = (draft?.descricao || '').length;
+  const initialCounterCls = initialDescLen >= 100 && initialDescLen <= 1000 ? 'ok' : (initialDescLen > 0 ? 'warn' : '');
+
+  return `
+  <div class="page section container" style="max-width:820px;">
+    <div class="breadcrumb"><a href="#/home">Início</a><span class="sep">${icon('chevronRight', 13)}</span><a href="#/area-aluno">Área do aluno</a><span class="sep">${icon('chevronRight', 13)}</span><span>Cadastro de Projeto</span></div>
+    <div class="eyebrow">${icon('plus', 14)} Novo projeto</div>
+    <h1 class="section-title">Cadastro de Projeto</h1>
+    <p class="section-sub" style="margin-bottom:32px;">Preencha as informações abaixo. Ao enviar, você recebe uma chave e uma senha para outros integrantes entrarem no projeto.</p>
+
+    <form id="cadastro-projeto-form" onsubmit="return handleCadastroProjetoSubmit(event)">
+      <div class="card card-pad" style="margin-bottom:20px;">
+        <h3 style="font-size:15.5px;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--ink-100);">${icon('cpu', 17)} Informações do Projeto</h3>
+
+        <div class="field">
+          <label>Nome do projeto *</label>
+          <input class="input" name="nome" required minlength="3" maxlength="120" placeholder="Ex: Sistema de Gestão Ambiental" value="${escapeHtml(draft?.nome || '')}">
+        </div>
+
+        <div class="field">
+          <label>ODS <span style="font-weight:400;color:var(--ink-300);">(Objetivo de Desenvolvimento Sustentável)</span></label>
+          <select class="select" name="ods">
+            <option value="">Selecione…</option>
+            ${ODS_LIST.map(o => `<option value="${escapeHtml(o)}" ${draft?.ods === o ? 'selected' : ''}>${o}</option>`).join('')}
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Descrição do projeto *</label>
+          <textarea class="textarea" name="descricao" required minlength="100" maxlength="1000" rows="5" oninput="updateCadastroCharCounter(this)" placeholder="Descreva os objetivos, metodologia e resultados esperados do seu projeto...">${escapeHtml(draft?.descricao || '')}</textarea>
+          <div class="char-counter ${initialCounterCls}" id="cad-char-counter">Mínimo 100 caracteres, máximo 1000 caracteres · ${initialDescLen}/1000</div>
+        </div>
+
+        <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px;">
+          <div class="field">
+            <label>Período</label>
+            <select class="select" name="periodo">
+              <option value="">Selecione…</option>
+              ${PERIODOS.map(p => `<option value="${p.value}" ${draft?.periodo === p.value ? 'selected' : ''}>${p.label}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field">
+            <label>Turma</label>
+            <input class="input" name="turma" placeholder="Ex: 3ºDS-A" value="${escapeHtml(draft?.turma ?? (u.turma || ''))}">
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Professor orientador *</label>
+          <select class="select" name="professor" required>
+            <option value="">Selecione o professor…</option>
+            ${teachers.map(t => `<option value="${t.id}" ${draft?.professor === t.id ? 'selected' : ''}>${escapeHtml(t.name)}${t.course ? ' · ' + escapeHtml(t.course) : ''}</option>`).join('')}
+          </select>
+        </div>
+
+        <div class="field" style="margin-bottom:0;">
+          <label>Links (GitHub, docs, endereço de QR code etc..)</label>
+          <input class="input" name="links" placeholder="Ex: https://github.com/seu-usuario/projeto" value="${escapeHtml(draft?.links || '')}">
+        </div>
+      </div>
+
+      <div class="card card-pad" style="margin-bottom:24px;">
+        <h3 style="font-size:15.5px;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--ink-100);">${icon('file', 17)} Documentos & Imagens</h3>
+
+        <div class="field">
+          <label>Imagem principal do projeto (opcional)</label>
+          <div class="dropzone" id="cad-cover-dropzone" onclick="document.getElementById('cad-cover-input').click()">
+            <div id="cad-cover-content">
+              <div class="dropzone-icon">${icon('upload', 22)}</div>
+              <div class="dropzone-title">Clique para carregar imagem</div>
+              <div class="dropzone-hint">Formatos suportados: JPG, PNG · Máximo 5MB</div>
+            </div>
+          </div>
+          <input type="file" id="cad-cover-input" accept="image/png,image/jpeg" style="display:none;" onchange="handleCadastroFileChange(event,'cover')">
+        </div>
+
+        <div class="field" style="margin-bottom:0;">
+          <label>Documentação (opcional)</label>
+          <div class="dropzone" id="cad-doc-dropzone" onclick="document.getElementById('cad-doc-input').click()">
+            <div id="cad-doc-content">
+              <div class="dropzone-icon">${icon('file', 22)}</div>
+              <div class="dropzone-title">Clique para carregar relatório ou especificações</div>
+              <div class="dropzone-hint">Formatos: PDF, DOC, DOCX · Máximo 10MB</div>
+            </div>
+          </div>
+          <input type="file" id="cad-doc-input" accept=".pdf,.doc,.docx" style="display:none;" onchange="handleCadastroFileChange(event,'doc')">
+        </div>
+      </div>
+
+      <div class="flex justify-between items-center" style="flex-wrap:wrap;gap:12px;">
+        <a href="#/area-aluno" class="btn btn-outline">← Voltar</a>
+        <div class="flex gap-10">
+          <button type="button" class="btn btn-ghost" onclick="saveCadastroDraft()">${icon('file', 16)} Salvar Rascunho</button>
+          <button type="submit" class="btn btn-primary btn-lg">Enviar para Aprovação ${icon('arrowRight', 17)}</button>
+        </div>
+      </div>
+    </form>
+  </div>`;
+}
+
+function updateCadastroCharCounter(textarea) {
+  const len = textarea.value.length;
+  const counter = $('#cad-char-counter');
+  if (!counter) return;
+  const cls = (len >= 100 && len <= 1000) ? 'ok' : (len > 0 ? 'warn' : '');
+  counter.className = `char-counter ${cls}`;
+  counter.textContent = `Mínimo 100 caracteres, máximo 1000 caracteres · ${len}/1000`;
+}
+
+function handleCadastroFileChange(e, kind) {
   const file = e.target.files && e.target.files[0];
   if (!file) return;
-  if (!file.type.startsWith('image/')) { toast('Selecione um arquivo de imagem.', 'error'); return; }
-  if (file.size > 2 * 1024 * 1024) { toast('A imagem deve ter no máximo 2MB.', 'error'); return; }
+  if (kind === 'cover') {
+    if (!file.type.startsWith('image/')) { toast('Selecione um arquivo de imagem (JPG ou PNG).', 'error'); return; }
+    if (file.size > 5 * 1024 * 1024) { toast('A imagem deve ter no máximo 5MB.', 'error'); return; }
+  } else {
+    if (!/\.(pdf|doc|docx)$/i.test(file.name)) { toast('Envie um arquivo PDF, DOC ou DOCX.', 'error'); return; }
+    if (file.size > 10 * 1024 * 1024) { toast('O documento deve ter no máximo 10MB.', 'error'); return; }
+  }
   const reader = new FileReader();
   reader.onload = () => {
-    pendingNewProjectCoverDataUrl = reader.result;
-    const preview = $('#new-project-cover-preview');
-    if (preview) preview.innerHTML = `<img src="${pendingNewProjectCoverDataUrl}" style="width:100%;height:100%;object-fit:cover;">`;
-    toast('Capa selecionada!', 'info');
+    if (kind === 'cover') { pendingCadastro.cover = reader.result; pendingCadastro.coverName = file.name; pendingCadastro.coverSize = file.size; }
+    else { pendingCadastro.doc = reader.result; pendingCadastro.docName = file.name; pendingCadastro.docSize = file.size; }
+    renderCadastroDropzonePreview(kind, file);
   };
   reader.readAsDataURL(file);
 }
-async function handleCreateProjectSubmit(e) {
+function renderCadastroDropzonePreview(kind, file) {
+  const dropzone = $(`#cad-${kind}-dropzone`);
+  const content = $(`#cad-${kind}-content`);
+  if (!dropzone || !content) return;
+  dropzone.classList.add('has-file');
+  const thumb = kind === 'cover'
+    ? `<img src="${pendingCadastro.cover}">`
+    : `<div class="dropzone-icon" style="margin:0;">${icon('file', 20)}</div>`;
+  content.innerHTML = `
+    <div class="dropzone-preview">
+      ${thumb}
+      <div style="min-width:0;flex:1;">
+        <div style="font-weight:700;font-size:13.5px;color:var(--ink-900);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(file.name)}</div>
+        <div style="font-size:12px;color:var(--ink-500);">${formatFileSize(file.size)} · ${icon('check', 12)} pronto</div>
+      </div>
+      <button type="button" class="dropzone-remove" onclick="event.stopPropagation();removeCadastroFile('${kind}')">${icon('x', 15)}</button>
+    </div>`;
+}
+function removeCadastroFile(kind) {
+  if (kind === 'cover') { pendingCadastro.cover = null; pendingCadastro.coverName = ''; pendingCadastro.coverSize = 0; }
+  else { pendingCadastro.doc = null; pendingCadastro.docName = ''; pendingCadastro.docSize = 0; }
+  const input = $(`#cad-${kind}-input`);
+  if (input) input.value = '';
+  const dropzone = $(`#cad-${kind}-dropzone`);
+  const content = $(`#cad-${kind}-content`);
+  if (dropzone) dropzone.classList.remove('has-file');
+  if (content) {
+    content.innerHTML = kind === 'cover'
+      ? `<div class="dropzone-icon">${icon('upload', 22)}</div><div class="dropzone-title">Clique para carregar imagem</div><div class="dropzone-hint">Formatos suportados: JPG, PNG · Máximo 5MB</div>`
+      : `<div class="dropzone-icon">${icon('file', 22)}</div><div class="dropzone-title">Clique para carregar relatório ou especificações</div><div class="dropzone-hint">Formatos: PDF, DOC, DOCX · Máximo 10MB</div>`;
+  }
+}
+
+async function handleCadastroProjetoSubmit(e) {
   e.preventDefault();
   const f = e.target.elements;
-  const equipeRaw = f.equipe ? f.equipe.value.trim() : '';
-  const payload = {
-    name: f.nome.value.trim(),
-    turma: f.turma.value.trim(),
-    course: f.curso.value,
-    periodo: f.periodo.value,
-    summary: f.resumo ? f.resumo.value.trim() : '',
-    description: f.descricao ? f.descricao.value.trim() : '',
-    category: f.categoria_id ? f.categoria_id.value : '',
-    team: equipeRaw ? equipeRaw.split(',').map(s => s.trim()).filter(Boolean) : [],
-    github: f.github ? f.github.value.trim() : '',
-    site: f.site ? f.site.value.trim() : '',
-    criado_por: state.currentUser.id,
-  };
-  if (pendingNewProjectCoverDataUrl) payload.cover = pendingNewProjectCoverDataUrl;
-  if (!payload.name || !payload.turma || !payload.course || !payload.periodo) {
-    toast('Preencha nome, turma, curso e período.', 'error');
+  const descricao = f.descricao.value.trim();
+  if (descricao.length < 100) {
+    toast('A descrição precisa ter pelo menos 100 caracteres.', 'error');
+    f.descricao.focus();
     return false;
   }
+  if (!f.professor.value) {
+    toast('Selecione o professor orientador.', 'error');
+    return false;
+  }
+  const payload = {
+    name: f.nome.value.trim(),
+    ods: f.ods.value,
+    description: descricao,
+    summary: descricao.slice(0, 140),
+    periodo: f.periodo.value,
+    turma: f.turma.value.trim(),
+    course: state.currentUser.curso || '',
+    teacher: f.professor.value,
+    links: f.links.value.trim(),
+    criado_por: state.currentUser.id,
+  };
+  if (pendingCadastro.cover) payload.cover = pendingCadastro.cover;
+  if (pendingCadastro.doc) payload.documento = pendingCadastro.doc;
+
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+  if (submitBtn) { submitBtn.disabled = true; submitBtn.innerHTML = `${icon('refresh', 16)} Enviando…`; }
   try {
     const result = await dataManager.createProject(payload);
     if (result.success) {
-      pendingNewProjectCoverDataUrl = null;
-      toast('Projeto cadastrado com sucesso! 🎉', 'success');
+      clearCadastroDraft();
       await loadAllData();
-      render();
+      openProjectCreatedModal(result.id, result.senha);
     } else {
       toast(result.error || 'Erro ao cadastrar projeto', 'error');
     }
-  } catch (err) { toast(err.message || 'Erro ao cadastrar projeto', 'error'); }
+  } catch (err) {
+    toast(err.message || 'Erro ao cadastrar projeto', 'error');
+  } finally {
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = `Enviar para Aprovação ${icon('arrowRight', 17)}`; }
+  }
   return false;
+}
+
+// Modal exibido após o cadastro: mostra a chave (id do projeto) e a senha
+// gerada, que devem ser repassadas aos outros integrantes da equipe.
+function openProjectCreatedModal(id, senha) {
+  openModal(`
+    <div class="modal-body">
+    <div style="text-align:center;padding:6px 4px 2px;">
+      <div class="success-badge">${icon('check', 32)}</div>
+      <h3 class="font-display" style="font-size:20px;margin-bottom:8px;">Cadastro concluído!</h3>
+      <p style="font-size:13.5px;color:var(--ink-500);max-width:380px;margin:0 auto 22px;">Seu projeto foi enviado com sucesso. Guarde a chave e a senha abaixo — são elas que outros integrantes vão usar para entrar neste projeto.</p>
+    </div>
+    <div style="text-align:left;">
+      <div class="credential-box">
+        <div class="credential-meta">
+          <div class="credential-label">Chave do projeto</div>
+          <div class="credential-value">${escapeHtml(id)}</div>
+        </div>
+        <button type="button" class="credential-copy" onclick="copyCredential('${id}', this)">${icon('copy', 16)}</button>
+      </div>
+      <div class="credential-box" style="margin-bottom:6px;">
+        <div class="credential-meta">
+          <div class="credential-label">Senha de acesso</div>
+          <div class="credential-value">${escapeHtml(senha)}</div>
+        </div>
+        <button type="button" class="credential-copy" onclick="copyCredential('${senha}', this)">${icon('copy', 16)}</button>
+      </div>
+      <p class="field-hint" style="margin-bottom:22px;">${icon('alert', 12)} Por segurança, essa senha não poderá ser recuperada depois — anote-a agora.</p>
+    </div>
+    <div class="flex gap-10">
+      <button class="btn btn-ghost" style="flex:1;" onclick="closeModal();navigate('#/area-aluno')">Ir para meus projetos</button>
+      <button class="btn btn-primary" style="flex:1;" onclick="closeModal();navigate('#/projeto/${id}')">${icon('eye', 16)} Ver meu projeto</button>
+    </div>
+    </div>
+  `);
+}
+function copyCredential(value, btn) {
+  const done = () => { if (btn) { const prev = btn.innerHTML; btn.innerHTML = icon('check', 16); setTimeout(() => { btn.innerHTML = prev; }, 1200); } };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(value).then(done).catch(() => toast('Não foi possível copiar automaticamente.', 'error'));
+  } else {
+    toast('Copie manualmente: ' + value, 'info');
+  }
+}
+
+// "Encontrar meu projeto" — outro integrante usa a chave + senha geradas no
+// cadastro para localizar o projeto e, se quiser, entrar nele como membro.
+function openFindProjectModal() {
+  openModal(`
+    <div class="modal-header">
+      <h3 class="font-display" style="font-size:19px;">Encontrar meu projeto</h3>
+      <button class="modal-close" onclick="closeModal()">${icon('close', 18)}</button>
+    </div>
+    <div class="modal-body">
+    <p class="field-hint" style="margin-bottom:18px;">Digite a chave e a senha que o criador do projeto recebeu no cadastro.</p>
+    <form id="find-project-form" onsubmit="return handleFindProjectSubmit(event)">
+      <div class="field"><label>Chave do projeto</label><input class="input" name="chave" required placeholder="Ex: p68f2a1c3e4567123"></div>
+      <div class="field" style="margin-bottom:8px;"><label>Senha de acesso</label><input class="input" name="senha" required placeholder="Ex: 7K9XPQ2M"></div>
+      <div id="find-project-result"></div>
+      <button type="submit" class="btn btn-primary btn-block" style="margin-top:8px;">${icon('search', 16)} Buscar projeto</button>
+    </form>
+    </div>
+  `);
+}
+async function handleFindProjectSubmit(e) {
+  e.preventDefault();
+  const f = e.target.elements;
+  const chave = f.chave.value.trim();
+  const senha = f.senha.value.trim();
+  const resultBox = $('#find-project-result');
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+  if (submitBtn) submitBtn.disabled = true;
+  try {
+    const result = await dataManager.findProjectByKey(chave, senha);
+    if (result.success && result.project) {
+      const p = result.project;
+      const alreadyMember = state.currentUser && (p.criado_por === state.currentUser.id || (safeParseArray(p.membros) || []).includes(state.currentUser.id));
+      resultBox.innerHTML = `
+        <div class="card card-pad" style="margin-bottom:4px;background:var(--green-50);border-color:var(--green-100);">
+          <div style="font-weight:700;font-size:14.5px;margin-bottom:4px;">${icon('checkCircle', 15)} ${escapeHtml(p.nome)}</div>
+          <div style="font-size:12.5px;color:var(--ink-500);margin-bottom:14px;">${escapeHtml(p.curso || '')} ${p.turma ? '· Turma ' + escapeHtml(p.turma) : ''}</div>
+          <div class="flex gap-8">
+            <a href="#/projeto/${p.id}" class="btn btn-outline btn-sm" style="flex:1;" onclick="closeModal()">${icon('eye', 14)} Ver projeto</a>
+            ${(!alreadyMember && state.currentUser && state.currentUser.role === 'aluno') ? `<button type="button" class="btn btn-secondary btn-sm" style="flex:1;" onclick="joinFoundProject('${chave.replace(/'/g, "\\'")}','${senha.replace(/'/g, "\\'")}')">${icon('users', 14)} Entrar como integrante</button>` : ''}
+          </div>
+          ${(!state.currentUser) ? `<p class="field-hint" style="margin-top:10px;">${icon('lock', 12)} Faça login como aluno para entrar como integrante deste projeto.</p>` : ''}
+        </div>`;
+    } else {
+      resultBox.innerHTML = `<p class="field-hint" style="color:var(--orange-600);margin-bottom:8px;">${icon('alert', 12)} ${escapeHtml(result.error || 'Chave ou senha incorretos.')}</p>`;
+    }
+  } catch (err) {
+    resultBox.innerHTML = `<p class="field-hint" style="color:var(--orange-600);margin-bottom:8px;">${icon('alert', 12)} ${escapeHtml(err.message || 'Chave ou senha incorretos.')}</p>`;
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
+  }
+  return false;
+}
+async function joinFoundProject(chave, senha) {
+  if (!state.currentUser) { toast('Faça login para entrar como integrante.', 'error'); return; }
+  try {
+    const result = await dataManager.joinProjectAsMember(chave, senha, state.currentUser.id);
+    if (result.success) {
+      toast('Você agora é integrante deste projeto! 🎉', 'success');
+      await loadAllData();
+      closeModal();
+      navigate(`#/projeto/${chave}`);
+    } else {
+      toast(result.error || 'Não foi possível entrar no projeto.', 'error');
+    }
+  } catch (err) { toast(err.message || 'Não foi possível entrar no projeto.', 'error'); }
 }
 
 function openEditProjectModal(id) {
@@ -2024,11 +2379,24 @@ function openEditProjectModal(id) {
             ${state.categories.map(c => `<option value="${c.id}" ${p.category === c.id ? 'selected' : ''}>${escapeHtml(c.name)}</option>`).join('')}
           </select>
         </div>
+        <div class="field"><label>ODS</label>
+          <select class="select" name="ods">
+            <option value="">Selecione…</option>
+            ${ODS_LIST.map(o => `<option value="${escapeHtml(o)}" ${p.ods === o ? 'selected' : ''}>${o}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field"><label>Professor orientador</label>
+          <select class="select" name="professor_id">
+            <option value="">Selecione o professor…</option>
+            ${(state.teachers && state.teachers.length ? state.teachers : MOCK.teachers).map(t => `<option value="${t.id}" ${p.teacher === t.id ? 'selected' : ''}>${escapeHtml(t.name)}</option>`).join('')}
+          </select>
+        </div>
         <div class="field"><label>Integrantes da equipe (separados por vírgula)</label><input class="input" name="equipe" value="${escapeHtml(equipeStr)}"></div>
         <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px;">
           <div class="field"><label>GitHub</label><input class="input" name="github" value="${escapeHtml(p.github || '')}"></div>
           <div class="field"><label>Site</label><input class="input" name="site" value="${escapeHtml(p.site || '')}"></div>
         </div>
+        <div class="field"><label>Links (GitHub, docs, QR code etc.)</label><input class="input" name="links" value="${escapeHtml(p.links || '')}"></div>
         <button type="submit" class="btn btn-primary btn-block btn-lg">${icon('check', 17)} Salvar alterações</button>
       </form>
     </div>`, {});
@@ -2062,9 +2430,12 @@ async function handleEditProjectSubmit(e, id) {
     resumo: f.resumo.value.trim(),
     descricao: f.descricao.value.trim(),
     categoria_id: f.categoria_id.value || null,
+    ods: f.ods.value,
+    professor_id: f.professor_id.value || null,
     team: equipeRaw ? equipeRaw.split(',').map(s => s.trim()).filter(Boolean) : [],
     github: f.github.value.trim(),
     site: f.site.value.trim(),
+    links: f.links.value.trim(),
   };
   if (pendingEditProjectCoverDataUrl) payload.capa = pendingEditProjectCoverDataUrl;
   if (!payload.nome || !payload.turma || !payload.curso || !payload.periodo) {
@@ -2205,6 +2576,7 @@ async function render() {
     case 'noticias': content = pageNews(); break;
     case 'perfil': content = pageProfile(); break;
     case 'area-aluno': content = pageStudentArea(); break;
+    case 'cadastro-projeto': content = pageCadastroProjeto(); break;
     case 'area-professor': content = pageTeacherArea(); break;
     case 'admin': content = pageAdmin(); break;
     default: content = page404();

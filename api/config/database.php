@@ -27,4 +27,16 @@ try {
 function generateId($prefix = '') {
     return $prefix . uniqid() . rand(100, 999);
 }
+
+// Gera uma senha de acesso aleatória e fácil de digitar (usada para
+// integrantes entrarem em um projeto pela chave + senha). Evita caracteres
+// ambíguos como 0/O e 1/I.
+function generateAccessPassword($length = 8) {
+    $chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+    $senha = '';
+    for ($i = 0; $i < $length; $i++) {
+        $senha .= $chars[random_int(0, strlen($chars) - 1)];
+    }
+    return $senha;
+}
 ?>

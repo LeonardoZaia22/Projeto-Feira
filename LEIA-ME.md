@@ -1,6 +1,84 @@
 # Sistema Feira Tech — ETEC Maria Cristina Medeiros
 
-## ✅ O que foi corrigido e implementado
+## 🆕 Atualização — Cadastro de Projeto em página própria + chave/senha de equipe
+
+### 🎨 Visual
+- Paleta trocada de verde para vermelho em todo o site (botões, links,
+  badges, gráfico do ranking, logo). Continua fácil de ajustar depois: os
+  tons ficam nas variáveis `--green-900` a `--green-50` no topo do
+  `style.css` (o nome da variável não mudou para não quebrar o resto do
+  código, só os valores de cor).
+- Mais efeitos: brilho passando nos botões ao passar o mouse, glow
+  vermelho nos cards, sublinhado animado no menu, texto do topo com
+  gradiente animado, animação de "sucesso" no modal pós-cadastro.
+
+### 📝 Cadastro de projeto agora é uma página só para isso
+- Antes o formulário ficava dentro da Área do Aluno. Agora existe a rota
+  `#/cadastro-projeto`, com os campos na mesma ordem do print de
+  referência: Nome*, ODS, Descrição* (mínimo 100 / máximo 1000
+  caracteres, com contador ao vivo), Período + Turma, Professor
+  orientador*, Links, upload de Imagem principal e de Documentação.
+- **"Salvar Rascunho"** guarda os campos preenchidos no navegador
+  (localStorage), não no banco — ao reabrir a página de cadastro nesse
+  mesmo aparelho/navegador, os campos voltam preenchidos. Não sincroniza
+  entre dispositivos.
+- O **curso** do aluno não aparece no formulário (ele é obrigatório no
+  banco, mas vem sozinho do perfil do aluno). Como o cadastro de conta
+  hoje não pede curso, se o aluno ainda não tiver preenchido isso no
+  perfil, a página de cadastro pede pra completar o perfil primeiro, com
+  um botão direto para lá — evita cair num erro no meio do formulário.
+- Período e Turma ficaram opcionais (sem asterisco no print de
+  referência); se não forem preenchidos, o período vira "manhã" por
+  padrão.
+
+### 🔑 Chave e senha para a equipe
+- Ao clicar em **"Enviar para Aprovação"**, o projeto é criado (continua
+  sendo publicado direto, sem fila de aprovação, como já era) e o sistema
+  gera:
+  - uma **chave** = o próprio id do projeto no banco;
+  - uma **senha aleatória** de 8 caracteres.
+- Aparece um modal de sucesso mostrando os dois valores (com botão de
+  copiar) e um aviso de que a senha não pode ser recuperada depois — ela
+  é guardada só com hash (`password_hash`) no banco, igual à senha de
+  login dos usuários.
+- **Botão "Encontrar meu projeto"**, ao lado de "Cadastrar Projeto" no
+  catálogo: abre um modal onde qualquer pessoa digita a chave + senha.
+  Encontrando o projeto, aparece um botão para **ver o projeto** e,
+  se a pessoa estiver logada como aluno, outro para **entrar como
+  integrante** — isso adiciona o id dela numa lista de membros do
+  projeto (coluna `membros`, sem afetar quem é o "criador"/dono
+  original). Na Área do Aluno, "Meus projetos" agora mostra também os
+  projetos em que a pessoa entrou como integrante, com um selo
+  "Integrante" (só quem criou o projeto pode editar/excluir).
+
+### ⚙️ Back-end
+- `api/projects/create.php`: reescrito para gerar chave/senha e salvar
+  os novos campos (`ods`, `links`, `documento`).
+- `api/projects/find.php` e `api/projects/join.php`: novos endpoints
+  para o fluxo de "Encontrar meu projeto".
+- `api/teachers.php`: **novo** — antes não existia nenhum endpoint para
+  listar professores, então o campo "Professor orientador" não tinha
+  como funcionar; agora existe e alimenta o select do cadastro.
+- `api/projects/list.php` e `detail.php`: nunca mais devolvem o hash da
+  senha de acesso; `list.php` também não devolve mais o arquivo de
+  documentação (evita respostas gigantes ao listar o catálogo — o
+  arquivo só é necessário na página do projeto).
+- A imagem de capa e o documento anexado continuam salvos como base64
+  direto no banco (`LONGTEXT`), do mesmo jeito que a capa e a foto de
+  perfil já funcionavam — simples de manter, mas vale saber que não é o
+  ideal para arquivos muito grandes ou em produção de verdade.
+
+### 🗄️ Banco de dados
+- Se você importar o `database.sql` **do zero**, as colunas novas já
+  vêm criadas.
+- Se você **já tinha o banco criado antes desta atualização**, rode o
+  arquivo `migracao_cadastro.sql` no phpMyAdmin (aba SQL) para adicionar
+  as colunas novas na tabela `projetos` sem perder os dados existentes.
+
+---
+
+## ✅ O que foi corrigido e implementado (entrega anterior)
+
 
 ### 🐞 Bugs críticos (causa raiz da votação/cadastro não funcionarem)
 1. **Caminho errado para o banco de dados em quase todos os endpoints.**
@@ -99,6 +177,9 @@ sequência, se desejar.
 1. Copie a pasta `projeto_feira` inteira para `htdocs` do seu XAMPP.
 2. Abra o **phpMyAdmin**, crie/importe o banco executando o arquivo
    `database.sql` (ele já cria o banco `feira_tech_mcm` e as tabelas).
+   > Já tinha o banco criado antes desta atualização? Rode também o
+   > `migracao_cadastro.sql` (aba SQL do phpMyAdmin) para adicionar as
+   > colunas novas usadas pela página de Cadastro de Projeto.
 3. Confirme em `api/config/database.php` que o usuário/senha do MySQL batem
    com o seu XAMPP (por padrão: usuário `root`, sem senha).
 4. Acesse `http://localhost/projeto_feira/` no navegador.

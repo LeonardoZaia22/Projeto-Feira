@@ -58,4 +58,12 @@ $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $projects = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+// Nunca expor o hash da senha de acesso. O documento anexado (PDF/DOC) só
+// é necessário na página de detalhes do projeto, não na listagem — remover
+// aqui evita carregar arquivos grandes à toa em toda consulta ao catálogo.
+foreach ($projects as &$p) {
+    unset($p['senha_acesso']);
+    unset($p['documento']);
+}
+
 echo json_encode($projects);

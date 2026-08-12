@@ -1,9 +1,15 @@
 <?php
 // api/projects/create.php
-// Cadastro de projeto pelo aluno. Conforme solicitado, o aluno só precisa
-// informar: nome do projeto, turma, curso e período (manhã/tarde/noite).
-// O projeto é salvo direto como "aprovado" (não passa por fila de aprovação)
-// e fica disponível imediatamente no catálogo para todos os visitantes.
+// Cadastro de projeto pelo aluno, feito pela página dedicada de cadastro.
+// Campos obrigatórios: nome, descrição (mín. 100 caracteres), curso (vem do
+// perfil do aluno) e professor orientador. Turma, período, ODS e links são
+// opcionais. O projeto é salvo direto como "aprovado" (sem fila de
+// aprovação) e fica disponível imediatamente no catálogo.
+//
+// Ao criar o projeto, é gerada uma CHAVE (o próprio id do projeto) e uma
+// SENHA aleatória de acesso. Essas credenciais são devolvidas apenas nesta
+// resposta (a senha é guardada com hash no banco) e servem para outros
+// integrantes entrarem no projeto depois, em "Encontrar meu projeto".
 require_once '../config/database.php';
 
 $data = json_decode(file_get_contents('php://input'), true);
@@ -11,50 +17,71 @@ $data = json_decode(file_get_contents('php://input'), true);
 $nome = trim($data['name'] ?? '');
 $turma = trim($data['turma'] ?? '');
 $curso = trim($data['course'] ?? '');
-$periodo = trim($data['periodo'] ?? '');
+$periodoEnviado = trim($data['periodo'] ?? '');
+$descricao = trim($data['description'] ?? '');
+$professor_id = trim($data['teacher'] ?? '');
 
 $cursosValidos = ['Informática para Internet', 'Química', 'Logística', 'Recursos Humanos', 'Administração', 'Qualidade'];
 $periodosValidos = ['manha', 'tarde', 'noite'];
 
-if (empty($nome) || empty($turma) || empty($curso) || empty($periodo)) {
+if (empty($nome) || empty($curso) || empty($professor_id)) {
     http_response_code(400);
-    echo json_encode(['error' => 'Nome do projeto, turma, curso e período são obrigatórios']);
+    echo json_encode(['error' => 'Nome do projeto, curso e professor orientador são obrigatórios']);
+    exit;
+}
+if (mb_strlen($descricao) < 100) {
+    http_response_code(400);
+    echo json_encode(['error' => 'A descrição do projeto precisa ter pelo menos 100 caracteres']);
     exit;
 }
 if (!in_array($curso, $cursosValidos, true)) {
     http_response_code(400);
-    echo json_encode(['error' => 'Curso inválido']);
+    echo json_encode(['error' => 'Curso inválido. Complete seu curso no seu perfil antes de cadastrar um projeto.']);
     exit;
 }
-if (!in_array($periodo, $periodosValidos, true)) {
+// Período é opcional na tela de cadastro; se não for enviado ou for
+// inválido, usa "manha" (mesmo padrão da coluna no banco).
+$periodo = in_array($periodoEnviado, $periodosValidos, true) ? $periodoEnviado : 'manha';
+
+// Confere se o professor orientador selecionado existe.
+$stmtProf = $pdo->prepare("SELECT id FROM professores WHERE id = ?");
+$stmtProf->execute([$professor_id]);
+if (!$stmtProf->fetch()) {
     http_response_code(400);
-    echo json_encode(['error' => 'Período inválido. Use manha, tarde ou noite']);
+    echo json_encode(['error' => 'Professor orientador inválido']);
     exit;
 }
 
 $id = generateId('p');
-$resumo = $data['summary'] ?? null;
-$descricao = $data['description'] ?? null;
+$resumo = $data['summary'] ?? mb_substr($descricao, 0, 140);
 $objetivos = isset($data['objectives']) ? json_encode($data['objectives']) : null;
 $tecnologias = isset($data['tech']) ? json_encode($data['tech']) : null;
 $categoria_id = !empty($data['category']) ? $data['category'] : null;
-$professor_id = !empty($data['teacher']) ? $data['teacher'] : null;
 $equipe = json_encode($data['team'] ?? []);
 $github = $data['github'] ?? '';
 $site = $data['site'] ?? '';
 $imagem = $data['image'] ?? '💡';
-// Foto de capa do projeto (imagem enviada pelo aluno, em base64/Data URL).
-// Campo opcional: se não for enviado, o projeto fica só com o emoji acima.
+// Foto de capa e documentação do projeto (arquivos enviados pelo aluno,
+// em base64/Data URL — mesmo padrão já usado para a foto de perfil e a
+// capa do projeto no restante do sistema).
 $capa = $data['cover'] ?? null;
+$documento = $data['documento'] ?? null;
+$ods = !empty($data['ods']) ? trim($data['ods']) : null;
+$links = !empty($data['links']) ? trim($data['links']) : null;
 $criado_por = $data['criado_por'] ?? null;
 $created_at = date('Y-m-d');
 
-$stmt = $pdo->prepare("INSERT INTO projetos
-    (id, nome, resumo, descricao, objetivos, tecnologias, categoria_id, curso, turma, periodo, professor_id, equipe, github, site, imagem, capa, criado_por, created_at, status, votos)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'aprovado', 0)");
+// Gera a chave (o próprio id do projeto) e a senha de acesso do projeto.
+$senhaAcesso = generateAccessPassword(8);
+$senhaHash = password_hash($senhaAcesso, PASSWORD_DEFAULT);
+$membros = json_encode([]);
 
-if ($stmt->execute([$id, $nome, $resumo, $descricao, $objetivos, $tecnologias, $categoria_id, $curso, $turma, $periodo, $professor_id, $equipe, $github, $site, $imagem, $capa, $criado_por, $created_at])) {
-    echo json_encode(['success' => true, 'id' => $id]);
+$stmt = $pdo->prepare("INSERT INTO projetos
+    (id, nome, resumo, descricao, objetivos, tecnologias, categoria_id, curso, turma, periodo, professor_id, equipe, github, site, imagem, capa, documento, ods, links, senha_acesso, membros, criado_por, created_at, status, votos)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'aprovado', 0)");
+
+if ($stmt->execute([$id, $nome, $resumo, $descricao, $objetivos, $tecnologias, $categoria_id, $curso, $turma, $periodo, $professor_id, $equipe, $github, $site, $imagem, $capa, $documento, $ods, $links, $senhaHash, $membros, $criado_por, $created_at])) {
+    echo json_encode(['success' => true, 'id' => $id, 'chave' => $id, 'senha' => $senhaAcesso]);
 } else {
     http_response_code(500);
     echo json_encode(['error' => 'Erro ao criar projeto']);

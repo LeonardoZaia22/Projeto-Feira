@@ -31,5 +31,8 @@ $stmtC = $pdo->prepare("SELECT co.id, co.texto AS text, co.data AS date, u.nome 
 $stmtC->execute([$id]);
 $project['comments'] = $stmtC->fetchAll(PDO::FETCH_ASSOC);
 
+// Nunca expor o hash da senha de acesso do projeto.
+unset($project['senha_acesso']);
+
 echo json_encode($project);
 ?>

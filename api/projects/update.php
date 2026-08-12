@@ -31,7 +31,7 @@ if ($usuario_id !== null) {
 
 $fields = [];
 $params = [];
-foreach (['nome','resumo','descricao','categoria_id','curso','turma','periodo','professor_id','github','site','imagem','capa'] as $field) {
+foreach (['nome','resumo','descricao','categoria_id','curso','turma','periodo','professor_id','github','site','imagem','capa','ods','links','documento'] as $field) {
     if (isset($data[$field])) {
         $fields[] = "$field = ?";
         $params[] = $data[$field];
