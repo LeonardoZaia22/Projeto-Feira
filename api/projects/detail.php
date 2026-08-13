@@ -22,6 +22,28 @@ if (!$project) {
     exit;
 }
 
+$criadorNome = '';
+if (!empty($project['criado_por'])) {
+    $stmtOwner = $pdo->prepare("SELECT nome FROM usuarios WHERE id = ? LIMIT 1");
+    $stmtOwner->execute([$project['criado_por']]);
+    $criadorNome = (string)($stmtOwner->fetchColumn() ?: '');
+    $project['criador_nome'] = $criadorNome;
+}
+
+$membrosIds = json_decode($project['membros'] ?? '[]', true);
+if (!is_array($membrosIds)) $membrosIds = [];
+$membrosIds = array_values(array_filter(array_map('strval', $membrosIds), fn($value) => $value !== ''));
+if (!empty($membrosIds)) {
+    $placeholders = implode(',', array_fill(0, count($membrosIds), '?'));
+    $stmtMembers = $pdo->prepare("SELECT nome FROM usuarios WHERE id IN ($placeholders)");
+    $stmtMembers->execute($membrosIds);
+    $project['membros_nomes'] = $stmtMembers->fetchAll(PDO::FETCH_COLUMN);
+    $project['team_names'] = array_values(array_filter(array_unique(array_merge([$criadorNome], $project['membros_nomes'] ?? []))));
+} else {
+    $project['membros_nomes'] = [];
+    $project['team_names'] = $criadorNome !== '' ? [$criadorNome] : [];
+}
+
 // Buscar comentários reais do projeto (mais recentes primeiro)
 $stmtC = $pdo->prepare("SELECT co.id, co.texto AS text, co.data AS date, u.nome AS author, u.avatar AS authorAvatar
                          FROM comentarios co

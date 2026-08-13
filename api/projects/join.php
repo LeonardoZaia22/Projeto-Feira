@@ -32,11 +32,23 @@ if (empty($project['senha_acesso']) || !password_verify($senha, $project['senha_
 }
 
 // Confirma se o usuário existe.
-$stmtU = $pdo->prepare("SELECT id FROM usuarios WHERE id = ?");
+$stmtU = $pdo->prepare("SELECT id, turma, curso FROM usuarios WHERE id = ?");
 $stmtU->execute([$usuario_id]);
-if (!$stmtU->fetch()) {
+$user = $stmtU->fetch(PDO::FETCH_ASSOC);
+if (!$user) {
     http_response_code(400);
     echo json_encode(['error' => 'Usuário inválido']);
+    exit;
+}
+
+$projectTurma = trim((string)($project['turma'] ?? ''));
+$projectCurso = trim((string)($project['curso'] ?? ''));
+$userTurma = trim((string)($user['turma'] ?? ''));
+$userCurso = trim((string)($user['curso'] ?? ''));
+
+if ($projectTurma !== '' && $projectCurso !== '' && ($userTurma !== $projectTurma || $userCurso !== $projectCurso)) {
+    http_response_code(403);
+    echo json_encode(['error' => 'Você só pode entrar em projetos da mesma turma e curso.']);
     exit;
 }
 
@@ -45,6 +57,12 @@ if (!is_array($membros)) $membros = [];
 
 if ($project['criado_por'] === $usuario_id) {
     echo json_encode(['success' => true, 'membros' => $membros, 'info' => 'Você já é o criador deste projeto']);
+    exit;
+}
+
+if (count($membros) >= 4) {
+    http_response_code(409);
+    echo json_encode(['error' => 'Este projeto já atingiu o limite de 5 participantes.']);
     exit;
 }
 

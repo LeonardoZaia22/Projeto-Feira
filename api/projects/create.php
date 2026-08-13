@@ -12,14 +12,43 @@
 // integrantes entrarem no projeto depois, em "Encontrar meu projeto".
 require_once '../config/database.php';
 
+try {
+    $pdo->exec("ALTER TABLE projetos ADD COLUMN IF NOT EXISTS qr_link TEXT NULL AFTER links");
+    $pdo->exec("ALTER TABLE projetos ADD COLUMN IF NOT EXISTS qr_code LONGTEXT NULL AFTER qr_link");
+} catch (Throwable $e) {
+    // Ignora falha de atualização de schema em ambientes antigos ou sem permissão.
+}
+
 $data = json_decode(file_get_contents('php://input'), true);
 
 $nome = trim($data['name'] ?? '');
+$descricao = trim($data['description'] ?? '');
+$professor_id = trim($data['teacher'] ?? '');
+$criado_por = $data['criado_por'] ?? null;
+
 $turma = trim($data['turma'] ?? '');
 $curso = trim($data['course'] ?? '');
 $periodoEnviado = trim($data['periodo'] ?? '');
-$descricao = trim($data['description'] ?? '');
-$professor_id = trim($data['teacher'] ?? '');
+
+if (empty($turma) && !empty($criado_por)) {
+    $stmtUser = $pdo->prepare("SELECT turma, curso, periodo FROM usuarios WHERE id = ? LIMIT 1");
+    $stmtUser->execute([$criado_por]);
+    $user = $stmtUser->fetch(PDO::FETCH_ASSOC);
+    if ($user) {
+        $turma = trim($user['turma'] ?? '');
+        $curso = trim($user['curso'] ?? '');
+        $periodoEnviado = trim($user['periodo'] ?? '');
+    }
+}
+
+if (empty($curso) && !empty($criado_por)) {
+    $stmtUser = $pdo->prepare("SELECT curso FROM usuarios WHERE id = ? LIMIT 1");
+    $stmtUser->execute([$criado_por]);
+    $user = $stmtUser->fetch(PDO::FETCH_ASSOC);
+    if ($user) {
+        $curso = trim($user['curso'] ?? '');
+    }
+}
 
 $cursosValidos = ['Informática para Internet', 'Química', 'Logística', 'Recursos Humanos', 'Administração', 'Qualidade'];
 $periodosValidos = ['manha', 'tarde', 'noite'];
@@ -68,19 +97,20 @@ $capa = $data['cover'] ?? null;
 $documento = $data['documento'] ?? null;
 $ods = !empty($data['ods']) ? trim($data['ods']) : null;
 $links = !empty($data['links']) ? trim($data['links']) : null;
-$criado_por = $data['criado_por'] ?? null;
+$qrLink = !empty($data['qrLink']) ? trim($data['qrLink']) : null;
+$qrCode = !empty($data['qrCode']) ? trim($data['qrCode']) : null;
 $created_at = date('Y-m-d');
 
 // Gera a chave (o próprio id do projeto) e a senha de acesso do projeto.
 $senhaAcesso = generateAccessPassword(8);
 $senhaHash = password_hash($senhaAcesso, PASSWORD_DEFAULT);
-$membros = json_encode([]);
+$membros = json_encode([$criado_por]);
 
 $stmt = $pdo->prepare("INSERT INTO projetos
-    (id, nome, resumo, descricao, objetivos, tecnologias, categoria_id, curso, turma, periodo, professor_id, equipe, github, site, imagem, capa, documento, ods, links, senha_acesso, membros, criado_por, created_at, status, votos)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'aprovado', 0)");
+    (id, nome, resumo, descricao, objetivos, tecnologias, categoria_id, curso, turma, periodo, professor_id, equipe, github, site, imagem, capa, documento, ods, links, qr_link, qr_code, senha_acesso, membros, criado_por, created_at, status, votos)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'aprovado', 0)");
 
-if ($stmt->execute([$id, $nome, $resumo, $descricao, $objetivos, $tecnologias, $categoria_id, $curso, $turma, $periodo, $professor_id, $equipe, $github, $site, $imagem, $capa, $documento, $ods, $links, $senhaHash, $membros, $criado_por, $created_at])) {
+if ($stmt->execute([$id, $nome, $resumo, $descricao, $objetivos, $tecnologias, $categoria_id, $curso, $turma, $periodo, $professor_id, $equipe, $github, $site, $imagem, $capa, $documento, $ods, $links, $qrLink, $qrCode, $senhaHash, $membros, $criado_por, $created_at])) {
     echo json_encode(['success' => true, 'id' => $id, 'chave' => $id, 'senha' => $senhaAcesso]);
 } else {
     http_response_code(500);

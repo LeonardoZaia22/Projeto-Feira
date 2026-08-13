@@ -79,6 +79,8 @@ CREATE TABLE IF NOT EXISTS projetos (
   site VARCHAR(255),
   ods VARCHAR(120) NULL,
   links TEXT NULL,
+  qr_link TEXT NULL,
+  qr_code LONGTEXT NULL,
   documento LONGTEXT NULL,
   senha_acesso VARCHAR(255) NULL,
   membros JSON NULL,

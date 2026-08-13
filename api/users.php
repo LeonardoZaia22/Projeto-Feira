@@ -3,13 +3,26 @@ require_once 'config/database.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 
+$ensureUserColumns = function($pdo) {
+    $columns = $pdo->query("SHOW COLUMNS FROM usuarios")->fetchAll(PDO::FETCH_COLUMN);
+    if (!in_array('periodo', $columns, true)) {
+        $pdo->exec("ALTER TABLE usuarios ADD COLUMN periodo ENUM('manha','tarde','noite') NOT NULL DEFAULT 'manha' AFTER turma");
+    }
+    if (!in_array('curso', $columns, true)) {
+        $pdo->exec("ALTER TABLE usuarios ADD COLUMN curso VARCHAR(50) AFTER role");
+    }
+    if (!in_array('turma', $columns, true)) {
+        $pdo->exec("ALTER TABLE usuarios ADD COLUMN turma VARCHAR(20) AFTER curso");
+    }
+};
+
+$ensureUserColumns($pdo);
+
 if ($method === 'GET') {
-    // Listar todos (com filtro opcional)
-    $stmt = $pdo->query("SELECT id, nome, email, role, curso, turma, telefone, avatar, created_at FROM usuarios ORDER BY nome");
+    $stmt = $pdo->query("SELECT id, nome, email, role, curso, turma, periodo, telefone, bio, avatar, created_at FROM usuarios ORDER BY nome");
     $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
     echo json_encode($users);
 } elseif ($method === 'POST') {
-    // Criar usuário (admin)
     $data = json_decode(file_get_contents('php://input'), true);
     $id = generateId('u');
     $hash = password_hash($data['password'] ?? '12345678', PASSWORD_DEFAULT);
@@ -21,13 +34,12 @@ if ($method === 'GET') {
         echo json_encode(['error' => 'Erro ao criar usuário']);
     }
 } elseif ($method === 'PUT') {
-    // Atualizar usuário
     $data = json_decode(file_get_contents('php://input'), true);
     $id = $data['id'];
     $fields = [];
     $params = [];
-    foreach (['nome','email','role','curso','turma','telefone','bio','avatar'] as $field) {
-        if (isset($data[$field])) {
+    foreach (['nome','email','role','curso','turma','periodo','telefone','bio','avatar'] as $field) {
+        if (array_key_exists($field, $data)) {
             $fields[] = "$field = ?";
             $params[] = $data[$field];
         }
@@ -51,7 +63,6 @@ if ($method === 'GET') {
         echo json_encode(['error' => 'Erro ao atualizar usuário']);
     }
 } elseif ($method === 'DELETE') {
-    // Deletar usuário
     $data = json_decode(file_get_contents('php://input'), true);
     $id = $data['id'] ?? '';
     if ($id) {
