@@ -1083,9 +1083,48 @@ tbody tr:last-child td {
 }
 
 /* ============================================================
+   CAPA DO PROJETO
+   ============================================================ */
+
+.project-cover {
+  height: 280px;
+  width: 100%;
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+/* ============================================================
    RESPONSIVE TWEAKS
    ============================================================ */
 @media (max-width: 768px) {
   .stat-card .num { font-size: 28px; }
   .section-title { font-size: 24px; }
+}
+/* ============================================================
+   CORREÇÃO DO LAYOUT DOS DETALHES DO PROJETO
+   ============================================================ */
+
+.project-detail-grid {
+  width: 100%;
+  min-width: 0;
+}
+
+.project-detail-grid > div {
+  min-width: 0;
+}
+
+.project-description {
+  max-width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
 }
