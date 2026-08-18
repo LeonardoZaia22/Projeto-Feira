@@ -1043,13 +1043,16 @@ function toggleRegisterAlunoFields(role) {
   const shouldShow = role === 'aluno';
   wrapper.style.display = shouldShow ? 'block' : 'none';
   if (!shouldShow) {
-    if (turmaSelect) turmaSelect.innerHTML = '<option value="">Selecione o período</option>';
+    if (turmaSelect) turmaSelect.innerHTML = '<option value="">Selecionar turma</option>';
     if (periodoInput) periodoInput.value = '';
     if (cursoInput) cursoInput.value = '';
     if (turmaSelect) turmaSelect.disabled = true;
   }
 }
 function selectRegisterPeriodo(periodo) {
+  const select = document.getElementById('register-turma-select');
+  const periodoInput = document.querySelector('input[name="periodo"]');
+  const cursoInput = document.querySelector('input[name="curso"]');
   const buttons = document.querySelectorAll('[data-periodo-button]');
   buttons.forEach(button => {
     const active = button.dataset.periodoButton === periodo;
@@ -1062,8 +1065,8 @@ function selectRegisterPeriodo(periodo) {
   periodoInput.value = periodo;
   select.disabled = !options.length;
   select.innerHTML = options.length
-    ? `<option value="">Selecione a turma</option>${options.map(item => `<option value="${item.value}">${item.label}</option>`).join('')}`
-    : '<option value="">Selecione o período</option>';
+    ? `<option value="">Selecionar turma</option>${options.map(item => `<option value="${item.value}">${item.label}</option>`).join('')}`
+    : '<option value="">Selecionar turma</option>';
   if (cursoInput) cursoInput.value = '';
 }
 function updateRegisterCursoFromTurma() {
@@ -1162,7 +1165,7 @@ function registerModalHtml() {
         <div class="field">
           <label>Turma</label>
           <select class="select" id="register-turma-select" name="turma" disabled required onchange="updateRegisterCursoFromTurma()">
-            <option value="">Selecione o período</option>
+            <option value="">Selecionar turma</option>
           </select>
           <input type="hidden" name="curso" value="">
         </div>
