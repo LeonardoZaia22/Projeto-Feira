@@ -1,7 +1,7 @@
 Necessidades projeto feira:
 
 Lista de professores orientadores Com suas turmas orientadas
-Lista total de todos os cursos
+Lista total de todos os cursos  
 
 Lista do cronograma: Evento, hora e local
 
@@ -15,6 +15,8 @@ Tela de Adm par aluno:
 O mapa só será disponibilizado no dia da feira?
 
 A parte de voto é só para visitantes?
+
+Maximo na tela e da imagem - Descrição
 
 
 Frontend: Imagens de todas as ODS, Padrozação com o figma, busca por projeot fixa, nomenclaturas

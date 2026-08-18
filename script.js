@@ -16,6 +16,7 @@ const API_BASE = window.location.href.replace(/#.*$/, '').replace(/index\.html$/
 // cadastro de projetos e nos filtros do catálogo.
 const COURSES = [
   'Informática para Internet',
+  'Desenvolvimento de Sistemas',
   'Química',
   'Logística',
   'Recursos Humanos',
@@ -27,33 +28,77 @@ const PERIODOS = [
   { value: 'tarde', label: 'Tarde' },
   { value: 'noite', label: 'Noite' },
 ];
+const TURMA_TO_CURSO = {
+  '1°A': 'Administração', '2°A': 'Administração', '3°A': 'Administração',
+  '1°B': 'Recursos Humanos', '2°B': 'Recursos Humanos', '3°B': 'Recursos Humanos',
+  '1°C': 'Informática para Internet', '2°C': 'Informática para Internet', '3°C': 'Informática para Internet',
+  '1°E': 'Desenvolvimento de Sistemas', '2°E': 'Desenvolvimento de Sistemas', '3°E': 'Desenvolvimento de Sistemas',
+  '1°F': 'Informática para Internet', '2°F': 'Informática para Internet', '3°F': 'Informática para Internet',
+  '1°I': 'Química', '2°I': 'Química', '3°I': 'Química',
+  '1°J': 'Química', '2°J': 'Química', '3°J': 'Química',
+  '1°D': 'Administração', '2°D': 'Administração', '3°D': 'Administração',
+  '1°H': 'Química', '2°H': 'Química', '3°H': 'Química',
+  '1°K': 'Logística', '2°K': 'Logística', '3°K': 'Logística',
+  '1°R': 'Recursos Humanos', '2°R': 'Recursos Humanos', '3°R': 'Recursos Humanos',
+  '1°Q': 'Qualidade', '2°Q': 'Qualidade', '3°Q': 'Qualidade',
+};
+function inferCursoFromTurma(turma) {
+  if (!turma) return '';
+  const normalized = String(turma).trim();
+  const direct = Object.entries(TURMA_TO_CURSO).find(([key]) => key.toUpperCase() === normalized.toUpperCase());
+  if (direct) return direct[1];
+
+  const upper = normalized.toUpperCase();
+  if (upper.includes('A')) return 'Administração';
+  if (upper.includes('B')) return 'Recursos Humanos';
+  if (upper.includes('E')) return 'Desenvolvimento de Sistemas';
+  if (upper.includes('C') || upper.includes('F')) return 'Informática para Internet';
+  if (upper.includes('I') || upper.includes('J') || upper.includes('H')) return 'Química';
+  if (upper.includes('K')) return 'Logística';
+  if (upper.includes('R')) return 'Recursos Humanos';
+  if (upper.includes('Q')) return 'Qualidade';
+  if (upper.includes('D')) return 'Administração';
+  return '';
+}
 const TURMAS_POR_PERIODO = {
   manha: [
-    { value: '1°A', label: '1°A', curso: 'Administração' },
-    { value: '2°A', label: '2°A', curso: 'Administração' },
-    { value: '3°A', label: '3°A', curso: 'Administração' },
-    { value: '1°B', label: '1°B', curso: 'Recursos Humanos' },
-    { value: '2°B', label: '2°B', curso: 'Recursos Humanos' },
-    { value: '3°B', label: '3°B', curso: 'Recursos Humanos' },
-    { value: '1°C', label: '1°C', curso: 'Informática para Internet' },
-    { value: '2°C', label: '2°C', curso: 'Informática para Internet' },
-    { value: '3°C', label: '3°C', curso: 'Informática para Internet' },
+    { value: '1°A', label: '1°A' },
+    { value: '2°A', label: '2°A' },
+    { value: '3°A', label: '3°A' },
+    { value: '1°B', label: '1°B' },
+    { value: '2°B', label: '2°B' },
+    { value: '3°B', label: '3°B' },
+    { value: '1°C', label: '1°C' },
+    { value: '2°C', label: '2°C' },
+    { value: '3°C', label: '3°C' },
+    { value: '1°E', label: '1°E' },
+    { value: '2°E', label: '2°E' },
+    { value: '3°E', label: '3°E' },
   ],
   tarde: [
-    { value: '1°F', label: '1°F', curso: 'Informática para Internet' },
-    { value: '2°F', label: '2°F', curso: 'Informática para Internet' },
-    { value: '3°F', label: '3°F', curso: 'Informática para Internet' },
-    { value: '1°I', label: '1°I', curso: 'Química' },
-    { value: '2°I', label: '2°I', curso: 'Química' },
-    { value: '3°I', label: '3°I', curso: 'Química' },
+    { value: '1°F', label: '1°F' },
+    { value: '2°F', label: '2°F' },
+    { value: '3°F', label: '3°F' },
+    { value: '1°I', label: '1°I' },
+    { value: '2°I', label: '2°I' },
+    { value: '3°I', label: '3°I' },
   ],
   noite: [
-    { value: '1°J', label: '1°J', curso: 'Química' },
-    { value: '2°J', label: '2°J', curso: 'Química' },
-    { value: '3°J', label: '3°J', curso: 'Química' },
-    { value: '1°K', label: '1°K', curso: 'Logística' },
-    { value: '2°K', label: '2°K', curso: 'Logística' },
-    { value: '3°K', label: '3°K', curso: 'Logística' },
+    { value: '1°D', label: '1°D' },
+    { value: '2°D', label: '2°D' },
+    { value: '3°D', label: '3°D' },
+    { value: '1°H', label: '1°H' },
+    { value: '2°H', label: '2°H' },
+    { value: '3°H', label: '3°H' },
+    { value: '1°K', label: '1°K' },
+    { value: '2°K', label: '2°K' },
+    { value: '3°K', label: '3°K' },
+    { value: '1°R', label: '1°R' },
+    { value: '2°R', label: '2°R' },
+    { value: '3°R', label: '3°R' },
+    { value: '1°Q', label: '1°Q' },
+    { value: '2°Q', label: '2°Q' },
+    { value: '3°Q', label: '3°Q' },
   ],
 };
 // Objetivos de Desenvolvimento Sustentável (ONU) — usados no cadastro de
@@ -126,7 +171,7 @@ const ICON = {
   clock: `<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>`,
   pin: `<path d="M12 21s7-6.6 7-12a7 7 0 0 0-14 0c0 5.4 7 12 7 12Z"/><circle cx="12" cy="9" r="2.5"/>`,
   layers: `<path d="m12 2 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 17 9 5 9-5"/>`,
-  shield: `<path d="M12 3l8 3v6c0 5-3.5 8.5-8 9-4.5-.5-8-4-8-9V6l8-3Z"/>`,
+  shield: `<path d="M12 3l8 3v6c0 5-3.5 8.5-8 9-4.5-.5-8-4-8-9V6l8-3"/>`,
   send: `<path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4 20-7Z"/>`,
   refresh: `<path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/>`,
   external: `<path d="M14 4h6v6"/><path d="M20 4 10 14"/><path d="M18 13v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5"/>`,
@@ -686,7 +731,9 @@ class DataManager {
   }
 
   async register(name, email, password, role, extra = {}) {
-    const payload = { name, email, password, role, periodo: extra.periodo || '', curso: extra.curso || '', turma: extra.turma || '' };
+    const turma = extra.turma || '';
+    const curso = (extra.curso || inferCursoFromTurma(turma) || '').trim();
+    const payload = { name, email, password, role, periodo: extra.periodo || '', curso, turma };
     if (!this.useApi) {
       const newUser = {
         id: 'u' + Date.now(),
@@ -859,11 +906,10 @@ function renderNavbar() {
             <div class="avatar" onclick="toggleUserMenu()" title="${escapeHtml(u.name)}" style="overflow:hidden;">${avatarContent(u)}</div>
             <div id="user-menu-dropdown" style="display:none;position:absolute;right:0;top:48px;background:var(--white);border:1px solid var(--ink-100);border-radius:var(--radius-md);box-shadow:var(--shadow-lg);width:230px;overflow:hidden;z-index:600;">
               <div style="padding:14px 16px;border-bottom:1px solid var(--ink-100);">
-                <div style="font-weight:700;font-size:14px;">${escapeHtml(u.name)}</div>
+                <div style="font-weight:700;fontsize:14px;">${escapeHtml(u.name)}</div>
                 <div class="badge badge-green" style="margin-top:6px;">${roleLabel(u.role)}</div>
               </div>
               <a href="#/perfil" class="sidebar-link" style="margin:6px 8px;" onclick="closeUserMenu()">${icon('user', 17)} Meu perfil</a>
-              ${u.role === 'aluno' ? `<a href="#/area-aluno" class="sidebar-link" style="margin:0 8px;" onclick="closeUserMenu()">${icon('layers', 17)} Área do aluno</a>` : ''}
               ${u.role === 'professor' ? `<a href="#/area-professor" class="sidebar-link" style="margin:0 8px;" onclick="closeUserMenu()">${icon('layers', 17)} Área do professor</a>` : ''}
               ${u.role === 'admin' ? `<a href="#/admin" class="sidebar-link" style="margin:0 8px;" onclick="closeUserMenu()">${icon('shield', 17)} Painel admin</a>` : ''}
               <button class="sidebar-link" style="margin:0 8px 8px;width:calc(100% - 16px);color:var(--orange-600);" onclick="doLogout()">${icon('logout', 17)} Sair</button>
@@ -940,7 +986,7 @@ function renderFooter() {
         <div>
           <div style="font-weight:700;margin-bottom:14px;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-100);">Acesso</div>
           <div class="flex-col gap-12" style="display:flex;font-size:14px;">
-            <a href="#/area-aluno">Área do aluno</a><a href="#/area-professor">Área do professor</a><a href="#/admin">Painel admin</a><a href="#/ranking">Votação</a>
+            <a href="#/area-professor">Área do professor</a><a href="#/admin">Painel admin</a><a href="#/ranking">Votação</a>
           </div>
         </div>
         <div>
@@ -1011,18 +1057,12 @@ function selectRegisterPeriodo(periodo) {
     button.classList.toggle('btn-outline', !active);
     button.setAttribute('aria-pressed', String(active));
   });
-  renderRegisterTurmas(periodo);
-}
-function renderRegisterTurmas(periodo) {
-  const select = document.getElementById('register-turma-select');
-  const periodoInput = document.querySelector('input[name="periodo"]');
-  const cursoInput = document.querySelector('input[name="curso"]');
   if (!select || !periodoInput) return;
   const options = TURMAS_POR_PERIODO[periodo] || [];
   periodoInput.value = periodo;
   select.disabled = !options.length;
   select.innerHTML = options.length
-    ? `<option value="">Selecione a turma</option>${options.map(item => `<option value="${item.value}" data-curso="${encodeURIComponent(item.curso)}">${item.label}</option>`).join('')}`
+    ? `<option value="">Selecione a turma</option>${options.map(item => `<option value="${item.value}">${item.label}</option>`).join('')}`
     : '<option value="">Selecione o período</option>';
   if (cursoInput) cursoInput.value = '';
 }
@@ -1030,9 +1070,8 @@ function updateRegisterCursoFromTurma() {
   const select = document.getElementById('register-turma-select');
   const cursoInput = document.querySelector('input[name="curso"]');
   if (!select || !cursoInput) return;
-  const selected = select.selectedOptions[0];
-  const rawCurso = selected ? selected.dataset.curso : '';
-  cursoInput.value = rawCurso ? decodeURIComponent(rawCurso) : '';
+  const selectedTurma = select.value || '';
+  cursoInput.value = inferCursoFromTurma(selectedTurma);
 }
 function loginModalHtml() {
   return `
@@ -1146,9 +1185,10 @@ async function handleRegisterSubmit(e) {
   const role = 'aluno';
   const periodo = f.periodo?.value || '';
   const turma = f.turma?.value || '';
-  const curso = f.curso?.value || '';
+  const curso = inferCursoFromTurma(turma) || (f.curso?.value || '');
   if (!periodo) { toast('Selecione o período do aluno.', 'error'); return false; }
   if (!turma) { toast('Selecione a turma do aluno.', 'error'); return false; }
+  if (!curso) { toast('Não foi possível identificar o curso da turma selecionada.', 'error'); return false; }
   try {
     const result = await dataManager.register(name, email, password, role, { periodo, turma, curso });
     if (result.success && result.user) {
@@ -1384,7 +1424,7 @@ function projectCard(p) {
     : `background:linear-gradient(135deg,var(--green-50),var(--blue-50));`;
   return `
   <a href="#/projeto/${p.id}" class="card card-hover" style="overflow:hidden;display:block;">
-    <div style="height:150px;${coverStyle}display:flex;align-items:center;justify-content:center;font-size:56px;position:relative;">
+    <div style="height:150px;${coverStyle}display:flex;align-items:center;justify-content:center;font-size:100px;position:relative;">
       ${p.cover ? '' : p.image}
       <div class="badge badge-${cat?.color || 'blue'}" style="position:absolute;top:12px;left:12px;">${cat?.name || 'Categoria'}</div>
       ${p.status === 'pendente' ? `<div class="badge badge-amber" style="position:absolute;top:12px;right:12px;">Pendente</div>` : ''}
@@ -1404,9 +1444,16 @@ function newsCard(n) {
   return `<a href="#/noticias" class="card card-hover" style="overflow:hidden;display:block;">
     <div style="height:130px;background:linear-gradient(135deg,var(--ink-900),var(--green-700));display:flex;align-items:center;justify-content:center;">${icon('news', 34)}</div>
     <div class="card-pad">
-      <div class="badge badge-gray" style="margin-bottom:10px;">${escapeHtml(n.category)}</div>
-      <h4 style="font-size:15.5px;margin-bottom:8px;line-height:1.35;">${escapeHtml(n.title)}</h4>
-      <div style="font-size:12.5px;color:var(--ink-500);">${fmtDate(n.date)} · ${escapeHtml(n.author)}</div>
+      <div class="flex items-center gap-8" style="margin-bottom:12px;">
+        <span class="badge badge-green">${escapeHtml(n.category)}</span>
+        <span style="font-size:12.5px;color:var(--ink-300);">${fmtDate(n.date)}</span>
+      </div>
+      <h3 style="font-size:18px;margin-bottom:10px;line-height:1.35;">${escapeHtml(n.title)}</h3>
+      <div style="font-size:14px;color:var(--ink-500);line-height:1.6;margin-bottom:16px;">${escapeHtml(n.excerpt)}</div>
+      <div class="flex justify-between items-center">
+        <span style="font-size:13px;color:var(--ink-500);">Por ${escapeHtml(n.author)}</span>
+        <button class="btn btn-ghost btn-sm" onclick="toast('${n.comments || 0} comentários nesta notícia','info')">💬 ${n.comments || 0}</button>
+      </div>
     </div>
   </a>`;
 }
@@ -1586,7 +1633,7 @@ function pageProjectDetail(id) {
             ${((p.team && p.team.length) ? p.team : [p.creatorName, ...(p.membros || [])]).filter(Boolean).map(m => `<div class="flex items-center gap-12"><div class="avatar" style="width:32px;height:32px;font-size:11px;">${initials(m)}</div><span style="font-size:14px;">${escapeHtml(m)}</span></div>`).join('') || `<div class="field-hint">Nenhum integrante cadastrado ainda.</div>`}
           </div>
           <hr class="divider" style="margin:16px 0;">
-          <div style="font-weight:700;font-size:14px;margin-bottom:12px;">Orientador(a)</div>
+          <div style="font-weight:700;fontsize:14px;margin-bottom:12px;">Orientador(a)</div>
           <div class="flex items-center gap-12"><div class="avatar" style="width:32px;height:32px;font-size:11px;">${teacher?.avatar}</div><div><div style="font-size:14px;font-weight:600;">${teacher?.name || '?'}</div><div style="font-size:12px;color:var(--ink-500);">${teacher?.course || ''}</div></div></div>
         </div>
         <div class="card card-pad" style="margin-bottom:20px;">
@@ -1617,7 +1664,9 @@ async function loadProjectComments(id) {
     const count = $('#comment-count');
     if (list && state.route === '#/projeto') { list.innerHTML = renderComments(p || { comments }); }
     if (count) count.textContent = comments.length;
-  } catch (e) { console.warn('Erro ao carregar comentários', e); }
+  } catch (e) {
+    console.warn('Erro ao carregar comentários', e);
+  }
 }
 function renderComments(p) {
   const comments = p.comments || [];
@@ -1847,7 +1896,7 @@ function pageNews() {
             <span style="font-size:12.5px;color:var(--ink-300);">${fmtDate(n.date)}</span>
           </div>
           <h3 style="font-size:18px;margin-bottom:10px;line-height:1.35;">${escapeHtml(n.title)}</h3>
-          <p style="font-size:14px;color:var(--ink-500);line-height:1.6;margin-bottom:16px;">${escapeHtml(n.excerpt)}</p>
+          <div style="font-size:14px;color:var(--ink-500);line-height:1.6;margin-bottom:16px;">${escapeHtml(n.excerpt)}</div>
           <div class="flex justify-between items-center">
             <span style="font-size:13px;color:var(--ink-500);">Por ${escapeHtml(n.author)}</span>
             <button class="btn btn-ghost btn-sm" onclick="toast('${n.comments || 0} comentários nesta notícia','info')">💬 ${n.comments || 0}</button>
@@ -1881,10 +1930,12 @@ function pageProfile() {
           <p style="font-size:13px;color:var(--ink-500);margin-top:10px;word-break:break-word;">${escapeHtml(u.email)}</p>
         </div>
         <div class="card card-pad" style="margin-top:20px;">
-          <div style="font-weight:700;margin-bottom:14px;font-size:14px;">${icon('layers', 15)} Histórico de participação</div>
-          <div class="flex justify-between" style="font-size:13.5px;padding:8px 0;border-bottom:1px solid var(--ink-100);"><span style="color:var(--ink-500);">Projetos cadastrados</span><strong>${myProjects.length}</strong></div>
-          <div class="flex justify-between" style="font-size:13.5px;padding:8px 0;border-bottom:1px solid var(--ink-100);"><span style="color:var(--ink-500);">Votos dados em projetos</span><strong>${votesGiven}</strong></div>
-          <div class="flex justify-between" style="font-size:13.5px;padding:8px 0;"><span style="color:var(--ink-500);">Oficinas frequentadas</span><strong>${attendedOffices.length}</strong></div>
+          <div style="font-weight:700;margin-bottom:14px;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-100);">Histórico</div>
+          <div class="flex-col gap-12" style="display:flex;font-size:14px;">
+            <div class="flex justify-between" style="font-size:13.5px;padding:8px 0;border-bottom:1px solid var(--ink-100);"><span style="color:var(--ink-500);">Projetos cadastrados</span><strong>${myProjects.length}</strong></div>
+            <div class="flex justify-between" style="font-size:13.5px;padding:8px 0;border-bottom:1px solid var(--ink-100);"><span style="color:var(--ink-500);">Votos dados em projetos</span><strong>${votesGiven}</strong></div>
+            <div class="flex justify-between" style="font-size:13.5px;padding:8px 0;"><span style="color:var(--ink-500);">Oficinas frequentadas</span><strong>${attendedOffices.length}</strong></div>
+          </div>
         </div>
       </div>
       <div>
@@ -1892,16 +1943,15 @@ function pageProfile() {
           <h3 style="font-size:16px;margin-bottom:18px;">${icon('user', 17)} Dados pessoais</h3>
           <form onsubmit="return handleProfileUpdateSubmit(event)">
             <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px;">
-              <div class="field"><label>Nome completo</label><input class="input" name="nome" value="${escapeHtml(u.name || '')}" required></div>
-              <div class="field"><label>E-mail</label><input class="input" name="email" type="email" value="${escapeHtml(u.email || '')}" required></div>
+              <div class="field"><label>Nome completo</label><input class="input" name="nome" value="${escapeHtml(u.name || '')}" required placeholder="Seu nome completo"></div>
+              <div class="field"><label>E-mail</label><input class="input" name="email" type="email" value="${escapeHtml(u.email || '')}" required placeholder="seunome@email.com"></div>
             </div>
             <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px;">
               <div class="field"><label>Telefone</label><input class="input" name="telefone" value="${escapeHtml(u.telefone || '')}" placeholder="(11) 90000-0000"></div>
               <div class="field">
                 <label>Período</label>
-                <select class="select" name="periodo">
-                  <option value="">Selecione…</option>
-                  ${PERIODOS.map(p => `<option value="${p.value}" ${String(u.periodo || '').toLowerCase() === p.value ? 'selected' : ''}>${p.label}</option>`).join('')}
+                <select class="select" name="periodo" required>
+                  ${PERIODOS.map(x => `<option value="${x.value}" ${u.periodo === x.value ? 'selected' : ''}>${x.label}</option>`).join('')}
                 </select>
               </div>
             </div>
@@ -1927,15 +1977,18 @@ function pageProfile() {
             <h3 style="font-size:16px;margin:0;">${icon('cpu', 17)} Meus projetos (${myProjects.length})</h3>
             <a href="#/cadastro-projeto" class="btn btn-secondary btn-sm">${icon('plus', 15)} Novo projeto</a>
           </div>
-          ${myProjects.length ? myProjects.map(p => `
+          ${myProjects.length ? myProjects.map(p => {
+            const isOwner = p.criadoPor === u.id;
+            return `
             <div class="flex justify-between items-center" style="padding:10px 0;border-bottom:1px solid var(--ink-100);">
               <a href="#/projeto/${p.id}" style="font-weight:600;font-size:14px;">${escapeHtml(p.name)}</a>
               <div class="flex items-center gap-8">
                 <span class="badge badge-green">${p.votes || 0} votos</span>
-                <button class="btn btn-ghost btn-sm" onclick="openEditProjectModal('${p.id}')">${icon('edit', 15)}</button>
-                <button class="btn btn-ghost btn-sm" style="color:var(--orange-600);" onclick="deleteMyProject('${p.id}')">${icon('trash', 15)}</button>
+                ${isOwner ? `<button class="btn btn-ghost btn-sm" onclick="openEditProjectModal('${p.id}')">${icon('edit', 15)}</button>
+                <button class="btn btn-ghost btn-sm" style="color:var(--orange-600);" onclick="deleteMyProject('${p.id}')">${icon('trash', 15)}</button>` : ''}
               </div>
-            </div>`).join('') : `<p style="font-size:13.5px;color:var(--ink-300);">Você ainda não cadastrou nenhum projeto.</p>`}
+            </div>`;
+          }).join('') : `<p style="font-size:13.5px;color:var(--ink-300);">Você ainda não cadastrou nenhum projeto.</p>`}
         </div>` : ''}
       </div>
     </div>
@@ -1969,12 +2022,7 @@ async function handleProfileUpdateSubmit(e) {
     bio: f.bio.value.trim(),
   };
   if (payload.turma) {
-    const turmaUpper = payload.turma.toUpperCase();
-    if (turmaUpper.includes('A')) payload.curso = 'Administração';
-    else if (turmaUpper.includes('B')) payload.curso = 'Recursos Humanos';
-    else if (turmaUpper.includes('C') || turmaUpper.includes('F')) payload.curso = 'Informática para Internet';
-    else if (turmaUpper.includes('I') || turmaUpper.includes('J')) payload.curso = 'Química';
-    else if (turmaUpper.includes('K')) payload.curso = 'Logística';
+    payload.curso = inferCursoFromTurma(payload.turma);
   }
   if (pendingAvatarDataUrl) payload.avatar = pendingAvatarDataUrl;
   if (f.password.value) payload.password = f.password.value;
@@ -2012,115 +2060,6 @@ function requireLoginPage(msg) {
   </div>`;
 }
 
-// ÁREA DO ALUNO
-function pageStudentArea() {
-  if (!state.currentUser || state.currentUser.role !== 'aluno') return requireLoginPage('Área exclusiva para alunos.');
-  const u = state.currentUser;
-  const myProjects = state.projects.filter(p => p.criadoPor === u.id || (p.membros || []).includes(u.id));
-  const offices = state.offices || [];
-  const attended = offices.filter(o => o.inscrito);
-  const alreadyVotedOffice = offices.find(o => o.votou);
-  const approvedProjects = [...state.projects].filter(p => p.status === 'aprovado').sort((a, b) => (b.votes || 0) - (a.votes || 0));
-
-  return `
-  <div class="page section container">
-    <div class="breadcrumb"><a href="#/home">Início</a><span class="sep">${icon('chevronRight', 13)}</span><span>Área do aluno</span></div>
-    <div class="eyebrow">${icon('layers', 14)} Painel do aluno</div>
-    <h1 class="section-title">Olá, ${escapeHtml((u.name || '').split(' ')[0])}!</h1>
-    <p class="section-sub" style="margin-bottom:32px;">Cadastre seu projeto, vote nos melhores projetos e nas oficinas que você participou.</p>
-
-    <div class="grid" style="grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;">
-      <div class="stat-card"><div class="icon-wrap" style="background:var(--green-100);color:var(--green-700);">${icon('cpu', 22)}</div><div class="num">${myProjects.length}</div><div class="lbl">Meus projetos</div></div>
-      <div class="stat-card"><div class="icon-wrap" style="background:var(--blue-100);color:var(--blue-700,var(--blue-600));">${icon('vote', 22)}</div><div class="num">${state.votedProjects.size}</div><div class="lbl">Votos dados em projetos</div></div>
-    </div>
-
-    <!-- CADASTRO DE PROJETO -->
-    <div class="card card-pad" style="margin-bottom:28px;background:linear-gradient(120deg,var(--green-700),var(--green-900));color:white;position:relative;overflow:hidden;">
-      <div class="blob" style="width:220px;height:220px;top:-90px;right:-40px;background:rgba(255,255,255,0.10);"></div>
-      <div style="position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;">
-        <div>
-          <h3 style="font-size:18px;margin-bottom:6px;">${icon('plus', 18)} Cadastrar novo projeto</h3>
-          <p style="font-size:13.5px;opacity:0.88;max-width:460px;">Preencha as informações do seu projeto em uma página dedicada e receba uma chave e senha para adicionar outros integrantes.</p>
-        </div>
-        <a href="#/cadastro-projeto" class="btn btn-lg" style="background:white;color:var(--green-700);flex-shrink:0;">${icon('arrowRight', 17)} Ir para o cadastro</a>
-      </div>
-    </div>
-
-    <!-- MEUS PROJETOS -->
-    <div class="card card-pad" style="margin-bottom:28px;">
-      <h3 style="font-size:17px;margin-bottom:16px;">${icon('cpu', 18)} Meus projetos</h3>
-      ${myProjects.length ? `<div class="flex-col gap-12" style="display:flex;">${myProjects.map(p => {
-        const isOwner = p.criadoPor === u.id;
-        return `
-        <div class="card card-pad" style="flex-direction:row;display:flex;align-items:center;justify-content:space-between;gap:12px;">
-          <div style="min-width:0;">
-            <div class="flex items-center gap-8" style="flex-wrap:wrap;">
-              <a href="#/projeto/${p.id}" style="font-weight:700;font-size:15px;">${escapeHtml(p.name)}</a>
-              <span class="badge ${isOwner ? 'badge-green' : 'badge-blue'}" style="font-size:10.5px;padding:3px 10px;">${isOwner ? 'Criador' : 'Integrante'}</span>
-            </div>
-            <div style="font-size:12.5px;color:var(--ink-500);margin-top:4px;">${escapeHtml(p.course)} · Turma ${escapeHtml(p.turma || '-')} · ${PERIODOS.find(x => x.value === p.periodo)?.label || ''}</div>
-          </div>
-          <div class="flex items-center gap-8" style="flex-shrink:0;">
-            <span class="badge badge-green">${p.votes || 0} votos</span>
-            ${isOwner ? `<button class="btn btn-ghost btn-sm" onclick="openEditProjectModal('${p.id}')">${icon('edit', 15)}</button>
-            <button class="btn btn-ghost btn-sm" style="color:var(--orange-600);" onclick="deleteMyProject('${p.id}')">${icon('trash', 15)}</button>` : ''}
-          </div>
-        </div>`;
-      }).join('')}</div>` : `<div class="empty-state" style="padding:32px;">${icon('cpu', 32)}<h3 style="font-size:14.5px;">Nenhum projeto cadastrado ainda</h3><p style="font-size:13px;">Use o botão acima para cadastrar seu primeiro projeto, ou "Encontrar meu projeto" no catálogo para entrar como integrante.</p></div>`}
-    </div>
-
-    <!-- VOTAÇÃO DE PROJETOS -->
-    <div class="card card-pad" style="margin-bottom:28px;">
-      <h3 style="font-size:17px;margin-bottom:6px;">${icon('vote', 18)} Votação popular — projetos</h3>
-      <p class="field-hint" style="margin-bottom:16px;">Vote no seu projeto favorito. Você pode votar em quantos projetos quiser, mas apenas uma vez em cada um.</p>
-      <div class="flex-col gap-10" style="display:flex;max-height:420px;overflow-y:auto;">
-        ${approvedProjects.map(p => {
-          const hasVoted = state.votedProjects.has(p.id);
-          return `
-          <div class="flex justify-between items-center" style="padding:10px 12px;border:1px solid var(--ink-100);border-radius:var(--radius-md);">
-            <div class="flex items-center gap-12" style="min-width:0;">
-              <span style="font-size:22px;">${p.image}</span>
-              <a href="#/projeto/${p.id}" style="font-weight:600;font-size:14px;">${escapeHtml(p.name)}</a>
-            </div>
-            <button class="btn ${hasVoted ? 'btn-ghost' : 'btn-secondary'} btn-sm" onclick="voteProject('${p.id}')" ${hasVoted ? 'disabled' : ''}>${hasVoted ? icon('check', 13) + ' Votado' : icon('vote', 13) + ' Votar (' + (p.votes || 0) + ')'}</button>
-          </div>`;
-        }).join('')}
-      </div>
-    </div>
-
-    <!-- OFICINAS: FREQUÊNCIA -->
-    <div class="card card-pad" style="margin-bottom:28px;">
-      <h3 style="font-size:17px;margin-bottom:6px;">${icon('calendar', 18)} Oficinas que você frequentou</h3>
-      <p class="field-hint" style="margin-bottom:16px;">Marque todas as oficinas que você participou. Depois disso, você poderá votar na melhor entre elas.</p>
-      <div class="flex-col gap-10" style="display:flex;">
-        ${offices.length ? offices.map(o => `
-          <label class="flex items-center gap-12" style="padding:12px 14px;border:1px solid var(--ink-100);border-radius:var(--radius-md);cursor:${o.inscrito ? 'default' : 'pointer'};">
-            <input type="checkbox" ${o.inscrito ? 'checked disabled' : ''} onchange="markOfficeAttended('${o.id}')" style="width:18px;height:18px;">
-            <div style="flex:1;">
-              <div style="font-weight:600;font-size:14px;">${escapeHtml(o.titulo)}</div>
-              <div style="font-size:12.5px;color:var(--ink-500);">${icon('user', 13)} ${escapeHtml(o.instrutor)} · ${fmtDate(o.data)} · ${String(o.hora).slice(0,5)} · ${icon('pin', 13)} ${escapeHtml(o.local)}</div>
-            </div>
-            ${o.inscrito ? `<span class="badge badge-green">${icon('check', 12)} Frequentei</span>` : ''}
-          </label>`).join('') : `<p style="font-size:13.5px;color:var(--ink-300);">Nenhuma oficina cadastrada no momento.</p>`}
-      </div>
-    </div>
-
-    <!-- OFICINAS: VOTAÇÃO -->
-    <div class="card card-pad">
-      <h3 style="font-size:17px;margin-bottom:6px;">${icon('trophy', 18)} Vote na melhor oficina</h3>
-      <p class="field-hint" style="margin-bottom:16px;">Você só pode votar em oficinas que marcou como frequentadas acima, e apenas em uma delas.</p>
-      ${attended.length ? `<div class="flex-col gap-10" style="display:flex;">${attended.map(o => `
-        <div class="flex justify-between items-center" style="padding:12px 14px;border:1px solid var(--ink-100);border-radius:var(--radius-md);">
-          <div>
-            <div style="font-weight:600;font-size:14px;">${escapeHtml(o.titulo)}</div>
-            <div style="font-size:12.5px;color:var(--ink-500);">${o.votos || 0} votos</div>
-          </div>
-          <button class="btn ${o.votou ? 'btn-ghost' : 'btn-secondary'} btn-sm" onclick="voteOffice('${o.id}')" ${alreadyVotedOffice ? 'disabled' : ''}>${o.votou ? icon('check', 13) + ' Votado' : icon('vote', 13) + ' Votar nesta'}</button>
-        </div>`).join('')}</div>` : `<div class="empty-state" style="padding:28px;">${icon('calendar', 30)}<h3 style="font-size:14px;">Marque ao menos uma oficina como frequentada</h3><p style="font-size:12.5px;">Depois disso, ela aparecerá aqui para você votar.</p></div>`}
-    </div>
-  </div>`;
-}
-
 // CADASTRO DE PROJETO — página dedicada
 let pendingCadastro = { cover: null, coverName: '', coverSize: 0, doc: null, docName: '', docSize: 0, qr: null, qrName: '', qrSize: 0 };
 function cadastroDraftKey() { return `feiratech_draft_projeto_${state.currentUser ? state.currentUser.id : 'anon'}`; }
@@ -2150,7 +2089,7 @@ function clearCadastroDraft() {
 }
 
 function pageCadastroProjeto() {
-  if (!state.currentUser || state.currentUser.role !== 'aluno') return requireLoginPage('Apenas alunos podem cadastrar projetos.');
+  if (!state.currentUser || state.currentUser.role !== 'aluno') return requireLoginPage('Área exclusiva para alunos.');
   const u = state.currentUser;
 
   // O curso e a turma do aluno já vêm do cadastro/perfil, então não há
@@ -2172,7 +2111,7 @@ function pageCadastroProjeto() {
 
   return `
   <div class="page section container" style="max-width:820px;">
-    <div class="breadcrumb"><a href="#/home">Início</a><span class="sep">${icon('chevronRight', 13)}</span><a href="#/area-aluno">Área do aluno</a><span class="sep">${icon('chevronRight', 13)}</span><span>Cadastro de Projeto</span></div>
+    <div class="breadcrumb"><a href="#/home">Início</a><span class="sep">${icon('chevronRight', 13)}</span><a href="#/perfil">Meu perfil</a><span class="sep">${icon('chevronRight', 13)}</span><span>Cadastro de Projeto</span></div>
     <div class="eyebrow">${icon('plus', 14)} Novo projeto</div>
     <h1 class="section-title">Cadastro de Projeto</h1>
     <p class="section-sub" style="margin-bottom:32px;">Preencha as informações abaixo. Ao enviar, você recebe uma chave e uma senha para outros integrantes entrarem no projeto.</p>
@@ -2266,7 +2205,7 @@ function pageCadastroProjeto() {
       </div>
 
       <div class="flex justify-between items-center" style="flex-wrap:wrap;gap:12px;">
-        <a href="#/area-aluno" class="btn btn-outline">← Voltar</a>
+        <a href="#/perfil" class="btn btn-outline">← Voltar</a>
         <div class="flex gap-10">
           <button type="button" class="btn btn-ghost" onclick="saveCadastroDraft()">${icon('file', 16)} Salvar Rascunho</button>
           <button type="submit" class="btn btn-primary btn-lg">Enviar para Aprovação ${icon('arrowRight', 17)}</button>
@@ -2469,7 +2408,7 @@ function openProjectCreatedModal(id, senha) {
       <p class="field-hint" style="margin-bottom:22px;">${icon('alert', 12)} Por segurança, essa senha não poderá ser recuperada depois — anote-a agora.</p>
     </div>
     <div class="flex gap-10">
-      <button class="btn btn-ghost" style="flex:1;" onclick="closeModal();navigate('#/area-aluno')">Ir para meus projetos</button>
+      <button class="btn btn-ghost" style="flex:1;" onclick="closeModal();navigate('#/perfil')">Ir para meus projetos</button>
       <button class="btn btn-primary" style="flex:1;" onclick="closeModal();navigate('#/projeto/${id}')">${icon('eye', 16)} Ver meu projeto</button>
     </div>
     </div>
@@ -2518,7 +2457,7 @@ async function handleFindProjectSubmit(e) {
       const alreadyMember = state.currentUser && (p.criado_por === state.currentUser.id || (safeParseArray(p.membros) || []).includes(state.currentUser.id));
       resultBox.innerHTML = `
         <div class="card card-pad" style="margin-bottom:4px;background:var(--green-50);border-color:var(--green-100);">
-          <div style="font-weight:700;font-size:14.5px;margin-bottom:4px;">${icon('checkCircle', 15)} ${escapeHtml(p.nome)}</div>
+          <div style="font-weight:700;fontsize:14.5px;margin-bottom:4px;">${icon('checkCircle', 15)} ${escapeHtml(p.nome)}</div>
           <div style="font-size:12.5px;color:var(--ink-500);margin-bottom:14px;">${escapeHtml(p.curso || '')} ${p.turma ? '· Turma ' + escapeHtml(p.turma) : ''}</div>
           <div class="flex gap-8">
             <a href="#/projeto/${p.id}" class="btn btn-outline btn-sm" style="flex:1;" onclick="closeModal()">${icon('eye', 14)} Ver projeto</a>
@@ -2580,11 +2519,6 @@ function openEditProjectModal(id) {
         </div>
         <div class="grid" style="grid-template-columns:1fr 1fr 1fr;gap:16px;">
           <div class="field"><label>Turma *</label><input class="input" name="turma" required value="${escapeHtml(p.turma || '')}"></div>
-          <div class="field"><label>Curso *</label>
-            <select class="select" name="curso" required>
-              ${COURSES.map(c => `<option value="${c}" ${p.course === c ? 'selected' : ''}>${c}</option>`).join('')}
-            </select>
-          </div>
           <div class="field"><label>Período *</label>
             <select class="select" name="periodo" required>
               ${PERIODOS.map(x => `<option value="${x.value}" ${p.periodo === x.value ? 'selected' : ''}>${x.label}</option>`).join('')}
@@ -2784,6 +2718,11 @@ async function render() {
   let content = '';
   const [_, path, param] = hash.split('/');
 
+  if (path === 'area-aluno') {
+    navigate('#/home');
+    return;
+  }
+
   switch (path) {
     case undefined:
     case '':
@@ -2795,7 +2734,6 @@ async function render() {
     case 'mapa': content = pageMap(); break;
     case 'noticias': content = pageNews(); break;
     case 'perfil': content = pageProfile(); break;
-    case 'area-aluno': content = pageStudentArea(); break;
     case 'cadastro-projeto': content = pageCadastroProjeto(); break;
     case 'area-professor': content = pageTeacherArea(); break;
     case 'admin': content = pageAdmin(); break;
@@ -2810,7 +2748,6 @@ async function render() {
   if (path === 'admin') setTimeout(renderAdminCharts, 30);
   if ((path === 'projeto' || path === 'projetos') && param) setTimeout(() => loadProjectComments(param), 30);
 }
-
 function navigate(hash) { location.hash = hash; }
 
 window.addEventListener('hashchange', render);
