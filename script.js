@@ -16,6 +16,7 @@ const API_BASE = window.location.href.replace(/#.*$/, '').replace(/index\.html$/
 // cadastro de projetos e nos filtros do catálogo.
 const COURSES = [
   'Informática para Internet',
+  'Desenvolvimento de Sistemas',
   'Química',
   'Logística',
   'Recursos Humanos',
@@ -27,33 +28,77 @@ const PERIODOS = [
   { value: 'tarde', label: 'Tarde' },
   { value: 'noite', label: 'Noite' },
 ];
+const TURMA_TO_CURSO = {
+  '1°A': 'Administração', '2°A': 'Administração', '3°A': 'Administração',
+  '1°B': 'Recursos Humanos', '2°B': 'Recursos Humanos', '3°B': 'Recursos Humanos',
+  '1°C': 'Informática para Internet', '2°C': 'Informática para Internet', '3°C': 'Informática para Internet',
+  '1°E': 'Desenvolvimento de Sistemas', '2°E': 'Desenvolvimento de Sistemas', '3°E': 'Desenvolvimento de Sistemas',
+  '1°F': 'Informática para Internet', '2°F': 'Informática para Internet', '3°F': 'Informática para Internet',
+  '1°I': 'Química', '2°I': 'Química', '3°I': 'Química',
+  '1°J': 'Química', '2°J': 'Química', '3°J': 'Química',
+  '1°D': 'Administração', '2°D': 'Administração', '3°D': 'Administração',
+  '1°H': 'Química', '2°H': 'Química', '3°H': 'Química',
+  '1°K': 'Logística', '2°K': 'Logística', '3°K': 'Logística',
+  '1°R': 'Recursos Humanos', '2°R': 'Recursos Humanos', '3°R': 'Recursos Humanos',
+  '1°Q': 'Qualidade', '2°Q': 'Qualidade', '3°Q': 'Qualidade',
+};
+function inferCursoFromTurma(turma) {
+  if (!turma) return '';
+  const normalized = String(turma).trim();
+  const direct = Object.entries(TURMA_TO_CURSO).find(([key]) => key.toUpperCase() === normalized.toUpperCase());
+  if (direct) return direct[1];
+
+  const upper = normalized.toUpperCase();
+  if (upper.includes('A')) return 'Administração';
+  if (upper.includes('B')) return 'Recursos Humanos';
+  if (upper.includes('E')) return 'Desenvolvimento de Sistemas';
+  if (upper.includes('C') || upper.includes('F')) return 'Informática para Internet';
+  if (upper.includes('I') || upper.includes('J') || upper.includes('H')) return 'Química';
+  if (upper.includes('K')) return 'Logística';
+  if (upper.includes('R')) return 'Recursos Humanos';
+  if (upper.includes('Q')) return 'Qualidade';
+  if (upper.includes('D')) return 'Administração';
+  return '';
+}
 const TURMAS_POR_PERIODO = {
   manha: [
-    { value: '1°A', label: '1°A', curso: 'Administração' },
-    { value: '2°A', label: '2°A', curso: 'Administração' },
-    { value: '3°A', label: '3°A', curso: 'Administração' },
-    { value: '1°B', label: '1°B', curso: 'Recursos Humanos' },
-    { value: '2°B', label: '2°B', curso: 'Recursos Humanos' },
-    { value: '3°B', label: '3°B', curso: 'Recursos Humanos' },
-    { value: '1°C', label: '1°C', curso: 'Informática para Internet' },
-    { value: '2°C', label: '2°C', curso: 'Informática para Internet' },
-    { value: '3°C', label: '3°C', curso: 'Informática para Internet' },
+    { value: '1°A', label: '1°A' },
+    { value: '2°A', label: '2°A' },
+    { value: '3°A', label: '3°A' },
+    { value: '1°B', label: '1°B' },
+    { value: '2°B', label: '2°B' },
+    { value: '3°B', label: '3°B' },
+    { value: '1°C', label: '1°C' },
+    { value: '2°C', label: '2°C' },
+    { value: '3°C', label: '3°C' },
+    { value: '1°E', label: '1°E' },
+    { value: '2°E', label: '2°E' },
+    { value: '3°E', label: '3°E' },
   ],
   tarde: [
-    { value: '1°F', label: '1°F', curso: 'Informática para Internet' },
-    { value: '2°F', label: '2°F', curso: 'Informática para Internet' },
-    { value: '3°F', label: '3°F', curso: 'Informática para Internet' },
-    { value: '1°I', label: '1°I', curso: 'Química' },
-    { value: '2°I', label: '2°I', curso: 'Química' },
-    { value: '3°I', label: '3°I', curso: 'Química' },
+    { value: '1°F', label: '1°F' },
+    { value: '2°F', label: '2°F' },
+    { value: '3°F', label: '3°F' },
+    { value: '1°I', label: '1°I' },
+    { value: '2°I', label: '2°I' },
+    { value: '3°I', label: '3°I' },
   ],
   noite: [
-    { value: '1°J', label: '1°J', curso: 'Química' },
-    { value: '2°J', label: '2°J', curso: 'Química' },
-    { value: '3°J', label: '3°J', curso: 'Química' },
-    { value: '1°K', label: '1°K', curso: 'Logística' },
-    { value: '2°K', label: '2°K', curso: 'Logística' },
-    { value: '3°K', label: '3°K', curso: 'Logística' },
+    { value: '1°D', label: '1°D' },
+    { value: '2°D', label: '2°D' },
+    { value: '3°D', label: '3°D' },
+    { value: '1°H', label: '1°H' },
+    { value: '2°H', label: '2°H' },
+    { value: '3°H', label: '3°H' },
+    { value: '1°K', label: '1°K' },
+    { value: '2°K', label: '2°K' },
+    { value: '3°K', label: '3°K' },
+    { value: '1°R', label: '1°R' },
+    { value: '2°R', label: '2°R' },
+    { value: '3°R', label: '3°R' },
+    { value: '1°Q', label: '1°Q' },
+    { value: '2°Q', label: '2°Q' },
+    { value: '3°Q', label: '3°Q' },
   ],
 };
 // Objetivos de Desenvolvimento Sustentável (ONU) — usados no cadastro de
@@ -126,7 +171,7 @@ const ICON = {
   clock: `<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>`,
   pin: `<path d="M12 21s7-6.6 7-12a7 7 0 0 0-14 0c0 5.4 7 12 7 12Z"/><circle cx="12" cy="9" r="2.5"/>`,
   layers: `<path d="m12 2 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 17 9 5 9-5"/>`,
-  shield: `<path d="M12 3l8 3v6c0 5-3.5 8.5-8 9-4.5-.5-8-4-8-9V6l8-3Z"/>`,
+  shield: `<path d="M12 3l8 3v6c0 5-3.5 8.5-8 9-4.5-.5-8-4-8-9V6l8-3"/>`,
   send: `<path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4 20-7Z"/>`,
   refresh: `<path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/>`,
   external: `<path d="M14 4h6v6"/><path d="M20 4 10 14"/><path d="M18 13v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5"/>`,
@@ -686,7 +731,9 @@ class DataManager {
   }
 
   async register(name, email, password, role, extra = {}) {
-    const payload = { name, email, password, role, periodo: extra.periodo || '', curso: extra.curso || '', turma: extra.turma || '' };
+    const turma = extra.turma || '';
+    const curso = (extra.curso || inferCursoFromTurma(turma) || '').trim();
+    const payload = { name, email, password, role, periodo: extra.periodo || '', curso, turma };
     if (!this.useApi) {
       const newUser = {
         id: 'u' + Date.now(),
@@ -859,7 +906,7 @@ function renderNavbar() {
             <div class="avatar" onclick="toggleUserMenu()" title="${escapeHtml(u.name)}" style="overflow:hidden;">${avatarContent(u)}</div>
             <div id="user-menu-dropdown" style="display:none;position:absolute;right:0;top:48px;background:var(--white);border:1px solid var(--ink-100);border-radius:var(--radius-md);box-shadow:var(--shadow-lg);width:230px;overflow:hidden;z-index:600;">
               <div style="padding:14px 16px;border-bottom:1px solid var(--ink-100);">
-                <div style="font-weight:700;font-size:14px;">${escapeHtml(u.name)}</div>
+                <div style="font-weight:700;fontsize:14px;">${escapeHtml(u.name)}</div>
                 <div class="badge badge-green" style="margin-top:6px;">${roleLabel(u.role)}</div>
               </div>
               <a href="#/perfil" class="sidebar-link" style="margin:6px 8px;" onclick="closeUserMenu()">${icon('user', 17)} Meu perfil</a>
@@ -1010,18 +1057,12 @@ function selectRegisterPeriodo(periodo) {
     button.classList.toggle('btn-outline', !active);
     button.setAttribute('aria-pressed', String(active));
   });
-  renderRegisterTurmas(periodo);
-}
-function renderRegisterTurmas(periodo) {
-  const select = document.getElementById('register-turma-select');
-  const periodoInput = document.querySelector('input[name="periodo"]');
-  const cursoInput = document.querySelector('input[name="curso"]');
   if (!select || !periodoInput) return;
   const options = TURMAS_POR_PERIODO[periodo] || [];
   periodoInput.value = periodo;
   select.disabled = !options.length;
   select.innerHTML = options.length
-    ? `<option value="">Selecione a turma</option>${options.map(item => `<option value="${item.value}" data-curso="${encodeURIComponent(item.curso)}">${item.label}</option>`).join('')}`
+    ? `<option value="">Selecione a turma</option>${options.map(item => `<option value="${item.value}">${item.label}</option>`).join('')}`
     : '<option value="">Selecione o período</option>';
   if (cursoInput) cursoInput.value = '';
 }
@@ -1029,9 +1070,8 @@ function updateRegisterCursoFromTurma() {
   const select = document.getElementById('register-turma-select');
   const cursoInput = document.querySelector('input[name="curso"]');
   if (!select || !cursoInput) return;
-  const selected = select.selectedOptions[0];
-  const rawCurso = selected ? selected.dataset.curso : '';
-  cursoInput.value = rawCurso ? decodeURIComponent(rawCurso) : '';
+  const selectedTurma = select.value || '';
+  cursoInput.value = inferCursoFromTurma(selectedTurma);
 }
 function loginModalHtml() {
   return `
@@ -1145,9 +1185,10 @@ async function handleRegisterSubmit(e) {
   const role = 'aluno';
   const periodo = f.periodo?.value || '';
   const turma = f.turma?.value || '';
-  const curso = f.curso?.value || '';
+  const curso = inferCursoFromTurma(turma) || (f.curso?.value || '');
   if (!periodo) { toast('Selecione o período do aluno.', 'error'); return false; }
   if (!turma) { toast('Selecione a turma do aluno.', 'error'); return false; }
+  if (!curso) { toast('Não foi possível identificar o curso da turma selecionada.', 'error'); return false; }
   try {
     const result = await dataManager.register(name, email, password, role, { periodo, turma, curso });
     if (result.success && result.user) {
@@ -1607,7 +1648,9 @@ async function loadProjectComments(id) {
     const count = $('#comment-count');
     if (list && state.route === '#/projeto') { list.innerHTML = renderComments(p || { comments }); }
     if (count) count.textContent = comments.length;
-  } catch (e) { console.warn('Erro ao carregar comentários', e); }
+  } catch (e) {
+    console.warn('Erro ao carregar comentários', e);
+  }
 }
 function renderComments(p) {
   const comments = p.comments || [];
@@ -1884,16 +1927,15 @@ function pageProfile() {
           <h3 style="font-size:16px;margin-bottom:18px;">${icon('user', 17)} Dados pessoais</h3>
           <form onsubmit="return handleProfileUpdateSubmit(event)">
             <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px;">
-              <div class="field"><label>Nome completo</label><input class="input" name="nome" value="${escapeHtml(u.name || '')}" required></div>
-              <div class="field"><label>E-mail</label><input class="input" name="email" type="email" value="${escapeHtml(u.email || '')}" required></div>
+              <div class="field"><label>Nome completo</label><input class="input" name="nome" value="${escapeHtml(u.name || '')}" required placeholder="Seu nome completo"></div>
+              <div class="field"><label>E-mail</label><input class="input" name="email" type="email" value="${escapeHtml(u.email || '')}" required placeholder="seunome@email.com"></div>
             </div>
             <div class="grid" style="grid-template-columns:1fr 1fr;gap:16px;">
               <div class="field"><label>Telefone</label><input class="input" name="telefone" value="${escapeHtml(u.telefone || '')}" placeholder="(11) 90000-0000"></div>
               <div class="field">
                 <label>Período</label>
-                <select class="select" name="periodo">
-                  <option value="">Selecione…</option>
-                  ${PERIODOS.map(p => `<option value="${p.value}" ${u.periodo === p.value ? 'selected' : ''}>${p.label}</option>`).join('')}
+                <select class="select" name="periodo" required>
+                  ${PERIODOS.map(x => `<option value="${x.value}" ${u.periodo === x.value ? 'selected' : ''}>${x.label}</option>`).join('')}
                 </select>
               </div>
             </div>
@@ -1964,12 +2006,7 @@ async function handleProfileUpdateSubmit(e) {
     bio: f.bio.value.trim(),
   };
   if (payload.turma) {
-    const turmaUpper = payload.turma.toUpperCase();
-    if (turmaUpper.includes('A')) payload.curso = 'Administração';
-    else if (turmaUpper.includes('B')) payload.curso = 'Recursos Humanos';
-    else if (turmaUpper.includes('C') || turmaUpper.includes('F')) payload.curso = 'Informática para Internet';
-    else if (turmaUpper.includes('I') || turmaUpper.includes('J')) payload.curso = 'Química';
-    else if (turmaUpper.includes('K')) payload.curso = 'Logística';
+    payload.curso = inferCursoFromTurma(payload.turma);
   }
   if (pendingAvatarDataUrl) payload.avatar = pendingAvatarDataUrl;
   if (f.password.value) payload.password = f.password.value;
@@ -2036,7 +2073,7 @@ function clearCadastroDraft() {
 }
 
 function pageCadastroProjeto() {
-  if (!state.currentUser || state.currentUser.role !== 'aluno') return requireLoginPage('Apenas alunos podem cadastrar projetos.');
+  if (!state.currentUser || state.currentUser.role !== 'aluno') return requireLoginPage('Área exclusiva para alunos.');
   const u = state.currentUser;
 
   // O curso e a turma do aluno já vêm do cadastro/perfil, então não há
@@ -2404,7 +2441,7 @@ async function handleFindProjectSubmit(e) {
       const alreadyMember = state.currentUser && (p.criado_por === state.currentUser.id || (safeParseArray(p.membros) || []).includes(state.currentUser.id));
       resultBox.innerHTML = `
         <div class="card card-pad" style="margin-bottom:4px;background:var(--green-50);border-color:var(--green-100);">
-          <div style="font-weight:700;font-size:14.5px;margin-bottom:4px;">${icon('checkCircle', 15)} ${escapeHtml(p.nome)}</div>
+          <div style="font-weight:700;fontsize:14.5px;margin-bottom:4px;">${icon('checkCircle', 15)} ${escapeHtml(p.nome)}</div>
           <div style="font-size:12.5px;color:var(--ink-500);margin-bottom:14px;">${escapeHtml(p.curso || '')} ${p.turma ? '· Turma ' + escapeHtml(p.turma) : ''}</div>
           <div class="flex gap-8">
             <a href="#/projeto/${p.id}" class="btn btn-outline btn-sm" style="flex:1;" onclick="closeModal()">${icon('eye', 14)} Ver projeto</a>
@@ -2466,11 +2503,6 @@ function openEditProjectModal(id) {
         </div>
         <div class="grid" style="grid-template-columns:1fr 1fr 1fr;gap:16px;">
           <div class="field"><label>Turma *</label><input class="input" name="turma" required value="${escapeHtml(p.turma || '')}"></div>
-          <div class="field"><label>Curso *</label>
-            <select class="select" name="curso" required>
-              ${COURSES.map(c => `<option value="${c}" ${p.course === c ? 'selected' : ''}>${c}</option>`).join('')}
-            </select>
-          </div>
           <div class="field"><label>Período *</label>
             <select class="select" name="periodo" required>
               ${PERIODOS.map(x => `<option value="${x.value}" ${p.periodo === x.value ? 'selected' : ''}>${x.label}</option>`).join('')}
@@ -2700,7 +2732,6 @@ async function render() {
   if (path === 'admin') setTimeout(renderAdminCharts, 30);
   if ((path === 'projeto' || path === 'projetos') && param) setTimeout(() => loadProjectComments(param), 30);
 }
-
 function navigate(hash) { location.hash = hash; }
 
 window.addEventListener('hashchange', render);
