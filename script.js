@@ -1502,12 +1502,24 @@ function pageProjectDetail(id) {
       <a href="#/projetos">Projetos</a><span class="sep">${icon('chevronRight', 13)}</span>
       <span>${escapeHtml(p.name)}</span>
     </div>
-    <div class="grid" style="grid-template-columns:2fr 1fr;gap:40px;align-items:start;">
-      <div>
-        <div class="card" style="height:280px;${p.cover ? `background:center/cover no-repeat url('${p.cover}');` : 'background:linear-gradient(135deg,var(--green-50),var(--blue-50));'}display:flex;align-items:center;justify-content:center;font-size:100px;margin-bottom:28px;overflow:hidden;position:relative;">
+    <div class="grid project-detail-grid" style="grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:40px;align-items:start;">
+      <div style="min-width:0;">
+        <div
+          class="card project-cover"
+          style="${p.cover
+            ? `background-image:url('${p.cover}');`
+            : `background:linear-gradient(135deg,var(--green-50),var(--blue-50));`
+          }"
+        >
           ${p.cover ? '' : p.image}
-          <div class="badge badge-${cat?.color || 'blue'}" style="position:absolute;top:16px;left:16px;">${cat?.name || 'Categoria'}</div>
+
+          <div
+            class="badge badge-${cat?.color || 'blue'}"
+            style="position:absolute;top:16px;left:16px;"
+          >
+          ${cat?.name || 'Categoria'}
         </div>
+      </div>
         <div class="flex gap-8" style="margin-bottom:8px;">
           <span class="badge badge-${p.status === 'aprovado' ? 'green' : 'amber'}">${p.status === 'aprovado' ? 'Aprovado' : 'Pendente'}</span>
           <span class="badge badge-gray">${icon('building', 13)} Estande ${stand?.code || '?'}</span>
@@ -1517,7 +1529,11 @@ function pageProjectDetail(id) {
           ${['Descrição', 'Documentos', 'QR Code'].map((t, i) => `
             <button class="tab-btn" data-tab="${i}" onclick="switchProjectTab(${i})" style="padding:12px 18px;font-weight:600;font-size:14px;color:${i === 0 ? 'var(--green-700)' : 'var(--ink-500)'};border-bottom:2.5px solid ${i === 0 ? 'var(--green-600)' : 'transparent'};transition:all 0.2s;">${t}</button>`).join('')}
         </div>
-        <div id="tab-0" class="tab-panel"><p style="line-height:1.75;color:var(--ink-700);font-size:15px;">${escapeHtml(p.description)}</p></div>
+        <div id="tab-0" class="tab-panel">
+          <p class="project-description" style="line-height:1.75;color:var(--ink-700);font-size:15px;">
+            ${escapeHtml(p.description)}
+          </p>
+        </div>
         <div id="tab-1" class="tab-panel" style="display:none;">
           <div class="flex-col gap-12" style="display:flex;">
             ${p.document ? `
