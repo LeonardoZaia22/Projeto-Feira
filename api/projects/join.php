@@ -60,6 +60,22 @@ if ($project['criado_por'] === $usuario_id) {
     exit;
 }
 
+// Cada aluno pode participar de apenas um projeto (como criador ou membro).
+$stmtOwn = $pdo->prepare("SELECT id FROM projetos WHERE criado_por = ? LIMIT 1");
+$stmtOwn->execute([$usuario_id]);
+if ($stmtOwn->fetch()) {
+    http_response_code(409);
+    echo json_encode(['error' => 'Você já cadastrou um projeto. Cada aluno pode participar de apenas um projeto.']);
+    exit;
+}
+$stmtMember = $pdo->prepare("SELECT id FROM projetos WHERE id != ? AND JSON_CONTAINS(membros, JSON_QUOTE(?))");
+$stmtMember->execute([$chave, $usuario_id]);
+if ($stmtMember->fetch()) {
+    http_response_code(409);
+    echo json_encode(['error' => 'Você já é integrante de outro projeto. Cada aluno pode participar de apenas um projeto.']);
+    exit;
+}
+
 if (count($membros) >= 4) {
     http_response_code(409);
     echo json_encode(['error' => 'Este projeto já atingiu o limite de 5 participantes.']);

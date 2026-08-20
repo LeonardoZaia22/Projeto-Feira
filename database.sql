@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS professores (
   id VARCHAR(50) PRIMARY KEY,
   nome VARCHAR(100) NOT NULL,
   curso VARCHAR(50) NOT NULL,
+  turma VARCHAR(20) NULL,
   avatar VARCHAR(10)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -234,13 +235,20 @@ INSERT INTO categorias (id, nome, cor) VALUES
 ('c5','Saúde Digital','blue'),
 ('c6','Energias Renováveis','green');
 
-INSERT INTO professores (id, nome, curso, avatar) VALUES
-('t1','Profa. Marina Souza','Informática para Internet','MS'),
-('t2','Prof. Ricardo Nunes','Qualidade','RN'),
-('t3','Profa. Bianca Alves','Química','BA'),
-('t4','Prof. Diego Fontes','Administração','DF'),
-('t5','Profa. Renata Lima','Logística','RL'),
-('t6','Prof. Otávio Prado','Recursos Humanos','OP');
+INSERT INTO professores (id, nome, curso, turma, avatar) VALUES
+('t1','Profa. Marina Souza','Informática para Internet',NULL,'MS'),
+('t2','Prof. Ricardo Nunes','Qualidade',NULL,'RN'),
+('t3','Profa. Bianca Alves','Química',NULL,'BA'),
+('t4','Prof. Diego Fontes','Administração',NULL,'DF'),
+('t5','Profa. Renata Lima','Logística',NULL,'RL'),
+('t6','Prof. Otávio Prado','Recursos Humanos',NULL,'OP'),
+-- Professores orientadores reais — período da TARDE (demais períodos seguem como placeholder)
+('tq1i','Profa. Marta','Química','1°I','MA'),
+('tq2i','Profa. Juliana','Química','2°I','JU'),
+('tq3i','Prof. Paulo','Química','3°I','PA'),
+('tti1f','Prof. Bruno F','Informática para Internet','1°F','BF'),
+('tti2f','Profa. Edilma','Informática para Internet','2°F','ED'),
+('tti3f','Prof. Márcio','Informática para Internet','3°F','MC');
 
 INSERT INTO stands (id, codigo, pos_x, pos_y) VALUES
 ('e1','A1',12,18),('e2','A2',12,38),('e3','A3',12,58),

@@ -184,17 +184,9 @@ function icon(name, size = 20, strokeW = 2) {
 }
 
 function signatureMark(size = 32) {
-  return `<svg width="${size}" height="${size}" viewBox="0 0 40 40" fill="none">
-    <defs><linearGradient id="lcg" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#DC2430"/><stop offset="0.55" stop-color="#3E6B8C"/><stop offset="1" stop-color="#E76F51"/>
-    </linearGradient></defs>
-    <path d="M20 3C11 3 4 9 4 20c0 9 6 15 16 17 10-2 16-8 16-17C36 9 29 3 20 3Z" fill="url(#lcg)" opacity="0.12"/>
-    <path d="M20 6c-8 1-13 6-13 14 0 7 4.5 12 13 14 8.5-2 13-7 13-14 0-8-5-13-13-14Z" stroke="url(#lcg)" stroke-width="2.2"/>
-    <circle cx="20" cy="14" r="2.2" fill="#DC2430"/>
-    <circle cx="14" cy="22" r="2.2" fill="#E76F51"/>
-    <circle cx="26" cy="22" r="2.2" fill="#3E6B8C"/>
-    <circle cx="20" cy="28" r="2.2" fill="#DC2430"/>
-    <path d="M20 16v4M20 20l-5 2M20 20l5 2" stroke="url(#lcg)" stroke-width="1.6" stroke-linecap="round"/>
+  return `<svg width="${size}" height="${size}" viewBox="0 0 40 40" fill="none" style="flex-shrink:0;">
+    <circle cx="20" cy="20" r="18" fill="white" stroke="#A11429" stroke-width="2"/>
+    <text x="20" y="24.5" text-anchor="middle" font-family="Nunito, Inter, sans-serif" font-weight="900" font-size="12.5" fill="#A11429">MCM</text>
   </svg>`;
 }
 
@@ -202,21 +194,26 @@ function signatureMark(size = 32) {
    DADOS MOCK (FALLBACK)
    ============================================================ */
 const MOCK = {
-  categories: [
-    { id: 'c1', name: 'Inteligência Artificial', color: 'blue', icon: 'cpu' },
-    { id: 'c2', name: 'Sustentabilidade', color: 'green', icon: 'leaf' },
-    { id: 'c3', name: 'Robótica', color: 'blue', icon: 'cpu' },
-    { id: 'c4', name: 'IoT & Automação', color: 'blue', icon: 'cpu' },
-    { id: 'c5', name: 'Saúde Digital', color: 'blue', icon: 'cpu' },
-    { id: 'c6', name: 'Energias Renováveis', color: 'green', icon: 'leaf' },
-  ],
   get courses() { return COURSES; },
   teachers: [
     { id: 't1', name: 'Profa. Marina Souza', course: 'Desenvolvimento de Sistemas', avatar: 'MS' },
     { id: 't2', name: 'Prof. Ricardo Nunes', course: 'Eletrônica', avatar: 'RN' },
     { id: 't3', name: 'Profa. Bianca Alves', course: 'Meio Ambiente', avatar: 'BA' },
     { id: 't4', name: 'Prof. Diego Fontes', course: 'Administração', avatar: 'DF' },
+    // Professores orientadores reais — período da TARDE
+    { id: 'tq1i', name: 'Profa. Marta', course: 'Química', turma: '1°I', avatar: 'MA' },
+    { id: 'tq2i', name: 'Profa. Juliana', course: 'Química', turma: '2°I', avatar: 'JU' },
+    { id: 'tq3i', name: 'Prof. Paulo', course: 'Química', turma: '3°I', avatar: 'PA' },
+    { id: 'tti1f', name: 'Prof. Bruno F', course: 'Informática para Internet', turma: '1°F', avatar: 'BF' },
+    { id: 'tti2f', name: 'Profa. Edilma', course: 'Informática para Internet', turma: '2°F', avatar: 'ED' },
+    { id: 'tti3f', name: 'Prof. Márcio', course: 'Informática para Internet', turma: '3°F', avatar: 'MC' },
   ],
+  // Mapeamento turma (período da tarde) -> professor(a) orientador(a) responsável.
+  // Os demais períodos (manhã/noite) ainda não têm orientador real cadastrado.
+  turmaProfessorTarde: {
+    '1°I': 'tq1i', '2°I': 'tq2i', '3°I': 'tq3i',
+    '1°F': 'tti1f', '2°F': 'tti2f', '3°F': 'tti3f',
+  },
   users: [
     { id: 'u1', name: 'Administrador Geral', email: 'admin@etecmcm.sp.gov.br', role: 'admin', avatar: 'AG' },
     { id: 'u2', name: 'Marina Souza', email: 'marina.souza@etecmcm.sp.gov.br', role: 'professor', avatar: 'MS' },
@@ -230,20 +227,20 @@ const MOCK = {
     { id: 'e10', code: 'D1', x: 78, y: 18 }, { id: 'e11', code: 'D2', x: 78, y: 38 }, { id: 'e12', code: 'D3', x: 78, y: 58 },
   ],
   projects: [
-    { id: 'p1', name: 'EcoWatt — Monitor Inteligente de Energia', summary: 'Dispositivo IoT que monitora consumo elétrico residencial em tempo real.', description: 'O EcoWatt é um sistema embarcado com ESP32 que coleta dados de consumo.', objectives: ['Reduzir em até 18% o consumo', 'Democratizar dados'], tech: ['ESP32', 'Node.js', 'React'], category: 'c4', course: 'Eletrônica', teacher: 't2', team: ['Lucas Andrade', 'Beatriz Lima'], stand: 'e1', status: 'aprovado', image: '⚡', votes: 284, createdAt: '2026-03-02', github: '', site: '', files: [], comments: [] },
-    { id: 'p2', name: 'AgroSense — Irrigação Inteligente', summary: 'Sistema com sensores de umidade para automação de irrigação.', description: 'AgroSense combina sensores de umidade e previsão do tempo.', objectives: ['Economizar até 40% de água', 'Aumentar produtividade'], tech: ['Arduino', 'Python'], category: 'c6', course: 'Meio Ambiente', teacher: 't3', team: ['Ana Beatriz Costa', 'Rafael Torres'], stand: 'e2', status: 'aprovado', image: '🌱', votes: 341, createdAt: '2026-02-20', github: '', site: '', files: [], comments: [] },
-    { id: 'p3', name: 'MedAssist AI — Triagem Inteligente', summary: 'Assistente com IA para auxiliar na triagem inicial.', description: 'MedAssist AI usa classificação para priorizar atendimentos.', objectives: ['Reduzir tempo de espera', 'Apoio à decisão clínica'], tech: ['Python', 'Scikit-learn', 'Flask'], category: 'c5', course: 'Desenvolvimento de Sistemas', teacher: 't1', team: ['Gabriel Martins', 'Sofia Ribeiro'], stand: 'e3', status: 'aprovado', image: '🩺', votes: 412, createdAt: '2026-01-15', github: '', site: '', files: [], comments: [] },
-    { id: 'p4', name: 'RoboLimp — Robô Coletor de Resíduos', summary: 'Robô autônomo que identifica e recolhe recicláveis.', description: 'RoboLimp usa câmera, OpenCV e braço robótico.', objectives: ['Automatizar coleta seletiva', 'Educar sobre reciclagem'], tech: ['Raspberry Pi', 'OpenCV', 'Python'], category: 'c3', course: 'Eletrônica', teacher: 't2', team: ['Pedro Henrique Alves', 'Camila Duarte'], stand: 'e4', status: 'aprovado', image: '🤖', votes: 198, createdAt: '2026-03-10', github: '', site: '', files: [], comments: [] },
-    { id: 'p5', name: 'FinLearn — Educação Financeira Gamificada', summary: 'Plataforma web que ensina finanças através de simulações.', description: 'FinLearn transforma educação financeira em jogos.', objectives: ['Melhorar literacia financeira', 'Engajar via gamificação'], tech: ['React', 'Firebase'], category: 'c1', course: 'Administração', teacher: 't4', team: ['Isabela Fernandes', 'Thiago Souza'], stand: 'e5', status: 'aprovado', image: '💰', votes: 156, createdAt: '2026-02-05', github: '', site: '', files: [], comments: [] },
-    { id: 'p6', name: 'BioFiltro — Tratamento de Água de Baixo Custo', summary: 'Sistema de filtragem biológica usando materiais reciclados.', description: 'BioFiltro usa areia, carvão e biofilme para purificar água.', objectives: ['Reduzir doenças hídricas', 'Saneamento acessível'], tech: ['Química aplicada', 'Materiais reciclados'], category: 'c2', course: 'Química', teacher: 't3', team: ['Larissa Melo', 'Vitor Hugo Prado'], stand: 'e6', status: 'aprovado', image: '💧', votes: 227, createdAt: '2026-01-28', github: '', site: '', files: [], comments: [] },
-    { id: 'p7', name: 'SmartRoute — Otimização de Rotas Escolares', summary: 'Algoritmo que otimiza rotas de vans escolares.', description: 'SmartRoute aplica algoritmo do caixeiro viajante.', objectives: ['Reduzir tempo de trajeto', 'Diminuir emissão de CO₂'], tech: ['Python', 'OR-Tools'], category: 'c4', course: 'Logística', teacher: 't4', team: ['Matheus Rocha', 'Julia Prado'], stand: 'e7', status: 'pendente', image: '🚐', votes: 0, createdAt: '2026-03-18', github: '', site: '', files: [], comments: [] },
-    { id: 'p8', name: 'VisãoLibras — Tradutor de Libras em Tempo Real', summary: 'Aplicativo que traduz gestos em Libras para texto.', description: 'VisãoLibras usa câmera do celular para capturar sinais.', objectives: ['Promover inclusão', 'Ferramenta open-source'], tech: ['TensorFlow Lite', 'React Native'], category: 'c1', course: 'Desenvolvimento de Sistemas', teacher: 't1', team: ['Fernanda Costa', 'Bruno Lima'], stand: 'e8', status: 'aprovado', image: '🤟', votes: 389, createdAt: '2026-01-10', github: '', site: '', files: [], comments: [] },
+    { id: 'p1', name: 'EcoWatt — Monitor Inteligente de Energia', summary: 'Dispositivo IoT que monitora consumo elétrico residencial em tempo real.', description: 'O EcoWatt é um sistema embarcado com ESP32 que coleta dados de consumo.', objectives: ['Reduzir em até 18% o consumo', 'Democratizar dados'], tech: ['ESP32', 'Node.js', 'React'], course: 'Eletrônica', turma: '3°E', teacher: 't2', team: ['Lucas Andrade', 'Beatriz Lima'], stand: 'e1', status: 'aprovado', image: '⚡', votes: 284, createdAt: '2026-03-02', github: '', site: '', files: [], comments: [] },
+    { id: 'p2', name: 'AgroSense — Irrigação Inteligente', summary: 'Sistema com sensores de umidade para automação de irrigação.', description: 'AgroSense combina sensores de umidade e previsão do tempo.', objectives: ['Economizar até 40% de água', 'Aumentar produtividade'], tech: ['Arduino', 'Python'], course: 'Meio Ambiente', turma: '2°J', teacher: 't3', team: ['Ana Beatriz Costa', 'Rafael Torres'], stand: 'e2', status: 'aprovado', image: '🌱', votes: 341, createdAt: '2026-02-20', github: '', site: '', files: [], comments: [] },
+    { id: 'p3', name: 'MedAssist AI — Triagem Inteligente', summary: 'Assistente com IA para auxiliar na triagem inicial.', description: 'MedAssist AI usa classificação para priorizar atendimentos.', objectives: ['Reduzir tempo de espera', 'Apoio à decisão clínica'], tech: ['Python', 'Scikit-learn', 'Flask'], course: 'Desenvolvimento de Sistemas', turma: '3°C', teacher: 't1', team: ['Gabriel Martins', 'Sofia Ribeiro'], stand: 'e3', status: 'aprovado', image: '🩺', votes: 412, createdAt: '2026-01-15', github: '', site: '', files: [], comments: [] },
+    { id: 'p4', name: 'RoboLimp — Robô Coletor de Resíduos', summary: 'Robô autônomo que identifica e recolhe recicláveis.', description: 'RoboLimp usa câmera, OpenCV e braço robótico.', objectives: ['Automatizar coleta seletiva', 'Educar sobre reciclagem'], tech: ['Raspberry Pi', 'OpenCV', 'Python'], course: 'Eletrônica', turma: '2°E', teacher: 't2', team: ['Pedro Henrique Alves', 'Camila Duarte'], stand: 'e4', status: 'aprovado', image: '🤖', votes: 198, createdAt: '2026-03-10', github: '', site: '', files: [], comments: [] },
+    { id: 'p5', name: 'FinLearn — Educação Financeira Gamificada', summary: 'Plataforma web que ensina finanças através de simulações.', description: 'FinLearn transforma educação financeira em jogos.', objectives: ['Melhorar literacia financeira', 'Engajar via gamificação'], tech: ['React', 'Firebase'], course: 'Administração', turma: '3°A', teacher: 't4', team: ['Isabela Fernandes', 'Thiago Souza'], stand: 'e5', status: 'aprovado', image: '💰', votes: 156, createdAt: '2026-02-05', github: '', site: '', files: [], comments: [] },
+    { id: 'p6', name: 'BioFiltro — Tratamento de Água de Baixo Custo', summary: 'Sistema de filtragem biológica usando materiais reciclados.', description: 'BioFiltro usa areia, carvão e biofilme para purificar água.', objectives: ['Reduzir doenças hídricas', 'Saneamento acessível'], tech: ['Química aplicada', 'Materiais reciclados'], course: 'Química', turma: '2°I', teacher: 'tq2i', team: ['Larissa Melo', 'Vitor Hugo Prado'], stand: 'e6', status: 'aprovado', image: '💧', votes: 227, createdAt: '2026-01-28', github: '', site: '', files: [], comments: [] },
+    { id: 'p7', name: 'SmartRoute — Otimização de Rotas Escolares', summary: 'Algoritmo que otimiza rotas de vans escolares.', description: 'SmartRoute aplica algoritmo do caixeiro viajante.', objectives: ['Reduzir tempo de trajeto', 'Diminuir emissão de CO₂'], tech: ['Python', 'OR-Tools'], course: 'Logística', turma: '1°K', teacher: 't4', team: ['Matheus Rocha', 'Julia Prado'], stand: 'e7', status: 'pendente', image: '🚐', votes: 0, createdAt: '2026-03-18', github: '', site: '', files: [], comments: [] },
+    { id: 'p8', name: 'VisãoLibras — Tradutor de Libras em Tempo Real', summary: 'Aplicativo que traduz gestos em Libras para texto.', description: 'VisãoLibras usa câmera do celular para capturar sinais.', objectives: ['Promover inclusão', 'Ferramenta open-source'], tech: ['TensorFlow Lite', 'React Native'], course: 'Desenvolvimento de Sistemas', turma: '1°F', teacher: 'tti1f', team: ['Fernanda Costa', 'Bruno Lima'], stand: 'e8', status: 'aprovado', image: '🤟', votes: 389, createdAt: '2026-01-10', github: '', site: '', files: [], comments: [] },
   ],
   news: [
-    { id: 'n1', title: 'Feira Tech 2026 abre inscrições', category: 'Institucional', author: 'Comunicação ETEC', date: '2026-01-10', excerpt: 'Já estão abertas as inscrições.', comments: 12 },
-    { id: 'n2', title: 'Votação bate recorde', category: 'Novidades', author: 'Equipe', date: '2026-03-15', excerpt: 'Mais de 3 mil votos.', comments: 34 },
-    { id: 'n3', title: 'Parceria com empresas', category: 'Parcerias', author: 'Direção', date: '2026-02-22', excerpt: 'Três empresas confirmaram apoio.', comments: 8 },
-    { id: 'n4', title: 'Avaliação técnica dos projetos', category: 'Institucional', author: 'Coordenação', date: '2026-02-01', excerpt: 'Entenda os critérios.', comments: 5 },
+    { id: 'n1', title: 'Inscrições de projetos prorrogadas', category: 'Institucional', level: 'aviso', author: 'Comissão Organizadora', date: '2026-03-18', excerpt: 'O prazo de submissão foi estendido até 30/03. Equipes já inscritas podem editar seus dados no painel.', comments: 12 },
+    { id: 'n2', title: 'Votação popular abre no dia do evento', category: 'Novidades', level: 'informacao', author: 'Equipe', date: '2026-03-15', excerpt: 'Cada visitante poderá registrar um único voto por categoria diretamente pelo site da feira.', comments: 34 },
+    { id: 'n3', title: 'Oficina de pitch para as equipes', category: 'Parcerias', level: 'lembranca', author: 'Direção', date: '2026-03-10', excerpt: 'Encontro no auditório da ETEC MCM para preparar a apresentação de 5 minutos aos avaliadores.', comments: 8 },
+    { id: 'n4', title: 'Avaliação técnica dos projetos', category: 'Institucional', level: 'informacao', author: 'Coordenação', date: '2026-02-01', excerpt: 'Entenda os critérios que serão usados pelos professores orientadores na avaliação.', comments: 5 },
   ],
   schedule: [
     { id: 's1', date: '2026-04-06', time: '08:00', title: 'Credenciamento e abertura', location: 'Pátio Central', status: 'agendado' },
@@ -296,9 +293,6 @@ function normalizeProject(row) {
     description: row.descricao || '',
     objectives: safeParseArray(row.objetivos),
     tech: safeParseArray(row.tecnologias),
-    category: row.categoria_id,
-    categoryName: row.categoria_nome,
-    categoryColor: row.categoria_cor,
     course: row.curso,
     turma: row.turma,
     periodo: row.periodo,
@@ -327,11 +321,7 @@ function normalizeProject(row) {
 }
 function normalizeTeacher(row) {
   if (!row) return row;
-  return { id: row.id, name: row.nome, course: row.curso, avatar: row.avatar || (row.nome ? initials(row.nome) : '??') };
-}
-function normalizeCategory(row) {
-  if (!row) return row;
-  return { id: row.id, name: row.nome, color: row.cor, icon: row.icone };
+  return { id: row.id, name: row.nome, course: row.curso, turma: row.turma || '', avatar: row.avatar || (row.nome ? initials(row.nome) : '??') };
 }
 function normalizeNotification(row) {
   if (!row) return row;
@@ -371,7 +361,6 @@ class DataManager {
     this.useApi = USE_API;
     this.apiBase = API_BASE;
     this.cache = {
-      categories: null,
       projects: null,
       news: null,
       schedule: null,
@@ -394,19 +383,6 @@ class DataManager {
       throw new Error(err.error || `Erro ${res.status}`);
     }
     return res.json();
-  }
-
-  // Categorias
-  async getCategories() {
-    try {
-      const data = await this._fetch('categories.php');
-      const normalized = data.map(normalizeCategory);
-      this.cache.categories = normalized;
-      return normalized;
-    } catch (e) {
-      console.warn('Fallback categorias', e);
-      return MOCK.categories;
-    }
   }
 
   // Professores (orientadores) — usado no select do cadastro de projetos
@@ -496,6 +472,22 @@ class DataManager {
     return await this._fetch('projects/join.php', {
       method: 'POST',
       body: JSON.stringify({ chave, senha, usuario_id }),
+    });
+  }
+
+  // Gera uma NOVA senha de acesso para o projeto. Só o criador consegue
+  // chamar isso com sucesso (validado no backend). A senha antiga deixa
+  // de funcionar assim que uma nova é gerada.
+  async resetProjectPassword(id, usuario_id) {
+    if (!this.useApi) {
+      const p = MOCK.projects.find(x => x.id === id);
+      const senha = Math.random().toString(36).slice(2, 10).toUpperCase();
+      if (p) p.senha = senha;
+      return { success: true, senha };
+    }
+    return await this._fetch('projects/reset_password.php', {
+      method: 'POST',
+      body: JSON.stringify({ id, usuario_id }),
     });
   }
 
@@ -803,12 +795,11 @@ const state = {
   route: '#/home',
   currentUser: null,
   votedProjects: new Set(),
-  filters: { search: '', category: 'all', course: 'all', status: 'all', sort: 'votes' },
+  filters: { search: '', course: 'all', status: 'all', sort: 'votes' },
   toastId: 0,
   projects: [],
   news: [],
   schedule: [],
-  categories: [],
   teachers: [],
   offices: [],
   notifications: [],
@@ -825,14 +816,43 @@ function el(html) { const t = document.createElement('template'); t.innerHTML = 
 function escapeHtml(str) { return (str || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m])); }
 function fmtDate(d) { const dt = new Date(d + 'T00:00:00'); return dt.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }); }
 function fmtDateLong(d) { const dt = new Date(d + 'T00:00:00'); return dt.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' }); }
-function categoryOf(id) { return state.categories.find(c => c.id === id) || MOCK.categories.find(c => c.id === id); }
 function teacherOf(id, fallbackName) {
   const found = (state.teachers && state.teachers.length ? state.teachers : MOCK.teachers).find(t => t.id === id);
   if (found) return found;
   if (fallbackName) return { name: fallbackName, avatar: initials(fallbackName), course: '' };
   return null;
 }
+// Ação do botão "Criar ou Entrar em projeto" na home. Decide o que fazer
+// conforme o estado de login e se o aluno já participa de um projeto.
+function heroProjectAction() {
+  const u = state.currentUser;
+  if (!u) { openAuthModal('login'); return; }
+  if (u.role !== 'aluno') { toast('Apenas alunos podem participar de um projeto.', 'info'); return; }
+  const existing = getStudentProject(u.id);
+  if (existing) { navigate('#/projeto/' + existing.id); return; }
+  openCreateOrJoinModal();
+}
+function openCreateOrJoinModal() {
+  openModal(`
+    <div class="modal-header">
+      <h3 class="font-display" style="font-size:19px;">Participar de um projeto</h3>
+      <button class="modal-close" onclick="closeModal()">${icon('close', 18)}</button>
+    </div>
+    <div class="modal-body">
+      <p class="field-hint" style="margin-bottom:18px;">Cada aluno pode participar de apenas um projeto. Escolha uma opção:</p>
+      <div class="flex-col gap-12" style="display:flex;">
+        <button class="btn btn-primary btn-block" onclick="closeModal();navigate('#/cadastro-projeto')">${icon('plus', 17)} Cadastrar novo projeto</button>
+        <button class="btn btn-outline btn-block" onclick="closeModal();openFindProjectModal()">${icon('search', 17)} Entrar com chave e senha</button>
+      </div>
+    </div>
+  `);
+}
+
 function standOf(id) { return MOCK.stands.find(s => s.id === id); }
+function getStudentProject(userId) {
+  if (!userId) return null;
+  return state.projects.find(p => p.criadoPor === userId || (p.membros || []).includes(userId)) || null;
+}
 function formatFileSize(bytes) {
   if (!bytes && bytes !== 0) return '';
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
@@ -875,10 +895,8 @@ function routeLoaderDone() {
 const NAV_ITEMS = [
   { href: '#/home', label: 'Início' },
   { href: '#/projetos', label: 'Projetos' },
-  { href: '#/cronograma', label: 'Cronograma' },
-  { href: '#/mapa', label: 'Mapa' },
-  { href: '#/noticias', label: 'Notícias' },
-  { href: '#/ranking', label: 'Ranking' },
+  { href: '#/noticias', label: 'Cronograma' },
+  { href: '#/ranking', label: 'Votação popular' },
 ];
 function roleLabel(role) {
   return { admin: 'Administrador', professor: 'Professor', aluno: 'Aluno', visitante: 'Visitante' }[role] || role;
@@ -888,7 +906,12 @@ function renderNavbar() {
   return `
   <header class="navbar">
     <div class="container navbar-inner">
-      <a href="#/home" class="brand">${signatureMark(32)} <span>Feira Tech <span style="color:var(--green-600)">MCM</span></span><span class="tag">2026</span></a>
+      <a href="#/home" class="brand">${signatureMark(34)}
+        <span class="brand-text">
+          <span class="brand-line1">FEIRA TECNOLÓGICA <span class="accent">SUSTENTÁVEL</span></span>
+          <span class="brand-line2">· ETEC MCM</span>
+        </span>
+      </a>
       <nav class="nav-links">
         ${NAV_ITEMS.map(n => `<a href="${n.href}" class="nav-link ${state.route === n.href ? 'active' : ''}">${n.label}</a>`).join('')}
       </nav>
@@ -917,14 +940,15 @@ function renderNavbar() {
           </div>
         ` : `
           <button class="btn btn-ghost btn-sm" onclick="openAuthModal('login')">Entrar</button>
-          <button class="btn btn-primary btn-sm" onclick="openAuthModal('register')">Cadastrar</button>
+          <button class="btn btn-primary btn-sm" onclick="openAuthModal('register')">Criar conta</button>
         `}
         <button class="icon-btn mobile-toggle" onclick="toggleMobileNav()" aria-label="Menu">${icon('menu', 20)}</button>
       </div>
     </div>
     <div id="mobile-nav" style="display:none;border-top:1px solid var(--ink-100);background:var(--white);">
       <div class="container" style="padding:12px 20px;display:flex;flex-direction:column;gap:2px;">
-        ${NAV_ITEMS.map(n => `<a href="${n.href}" class="nav-link" style="text-align:left;" onclick="toggleMobileNav()">${n.label}</a>`).join('')}
+        ${NAV_ITEMS.map(n => `<a href="${n.href}" class="nav-link" style="text-align:left;padding:8px 0;" onclick="toggleMobileNav()">${n.label}</a>`).join('')}
+        ${!u ? `<button class="btn btn-primary btn-sm" style="margin-top:8px;width:fit-content;" onclick="openAuthModal('register')">Cadastrar</button>` : ''}
       </div>
     </div>
   </header>`;
@@ -972,33 +996,27 @@ function renderFooter() {
   return `
   <footer class="footer">
     <div class="container">
-      <div class="grid" style="grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;">
+      <div class="grid" style="grid-template-columns:1.4fr 1fr 1fr;gap:40px;">
         <div>
-          <div class="flex items-center gap-8" style="margin-bottom:14px;">${signatureMark(30)}<strong style="font-family:var(--font-display);font-size:16px;">Feira Tech MCM</strong></div>
-          <p style="color:var(--ink-300);font-size:14px;line-height:1.7;max-width:320px;">Plataforma oficial da Feira Tecnológica e Sustentável da ETEC Maria Cristina Medeiros. Inovação, educação e sustentabilidade.</p>
+          <div class="footer-heading" style="text-transform:uppercase;letter-spacing:.02em;">Feira Tecnológica <span style="color:var(--green-600);">Sustentável</span></div>
+          <p style="color:var(--ink-500);font-size:13.5px;line-height:1.7;max-width:320px;">ETEC Maria Cristina Medeiros (MCM) — unidade do Centro Paula Souza.</p>
         </div>
         <div>
-          <div style="font-weight:700;margin-bottom:14px;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-100);">Navegação</div>
-          <div class="flex-col gap-12" style="display:flex;font-size:14px;">
-            <a href="#/projetos">Projetos</a><a href="#/cronograma">Cronograma</a><a href="#/mapa">Mapa da feira</a><a href="#/noticias">Notícias</a>
+          <div class="footer-heading" style="text-transform:uppercase;letter-spacing:.05em;font-size:13px;">Navegação</div>
+          <div class="flex-col gap-10" style="display:flex;font-size:13.5px;">
+            <a href="#/projetos">Catálogo de projetos</a><a href="#/noticias">Cronograma</a><a href="#/ranking">Votação popular</a>
           </div>
         </div>
         <div>
-          <div style="font-weight:700;margin-bottom:14px;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-100);">Acesso</div>
-          <div class="flex-col gap-12" style="display:flex;font-size:14px;">
-            <a href="#/area-professor">Área do professor</a><a href="#/admin">Painel admin</a><a href="#/ranking">Votação</a>
-          </div>
-        </div>
-        <div>
-          <div style="font-weight:700;margin-bottom:14px;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-100);">Contato</div>
-          <div class="flex-col gap-12" style="display:flex;font-size:14px;color:var(--ink-300);">
-            <span>contato@etecmcm.sp.gov.br</span><span>(11) 4000-0000</span><span>São Paulo, SP</span>
+          <div class="footer-heading" style="text-transform:uppercase;letter-spacing:.05em;font-size:13px;">ETEC Maria Cristina Medeiros</div>
+          <div class="flex-col gap-10" style="display:flex;font-size:13.5px;color:var(--ink-500);">
+            <span>ETEC MCM — Rua Bélgica, 88 — Jardim Alvorada — Ribeirão Pires/SP — CEP 09402-080</span>
           </div>
         </div>
       </div>
-      <hr style="border:none;border-top:1px solid #1E2740;margin:40px 0 22px;">
-      <div class="flex justify-between items-center" style="flex-wrap:wrap;gap:10px;color:var(--ink-300);font-size:13px;">
-        <span>© 2026 ETEC Maria Cristina Medeiros — Feira Tecnológica e Sustentável</span>
+      <hr style="border:none;border-top:1px solid var(--ink-100);margin:36px 0 20px;">
+      <div class="flex justify-between items-center" style="flex-wrap:wrap;gap:10px;color:var(--ink-300);font-size:12.5px;">
+        <span>© 2026 ETEC Maria Cristina Medeiros — Feira Tecnológica Sustentável</span>
         <span class="text-mono">v1.0.0 · plataforma-feira-tech</span>
       </div>
     </div>
@@ -1278,7 +1296,6 @@ function handleGlobalSearch(q) {
    ============================================================ */
 async function loadAllData() {
   try {
-    state.categories = await dataManager.getCategories();
     state.projects = await dataManager.getProjects();
     state.teachers = await dataManager.getTeachers();
     state.news = await dataManager.getNews();
@@ -1305,43 +1322,45 @@ function pageHome() {
   const featured = state.projects.filter(p => p.status === 'aprovado').sort((a, b) => b.votes - a.votes).slice(0, 3);
   const approvedCount = state.projects.filter(p => p.status === 'aprovado').length;
   const totalVotes = state.projects.reduce((s, p) => s + (p.votes || 0), 0);
+  const myProject = state.currentUser ? getStudentProject(state.currentUser.id) : null;
+  const heroProjectBtn = myProject
+    ? `<a href="#/projeto/${myProject.id}" class="btn btn-outline btn-lg">${icon('eye', 18)} Ver meu projeto</a>`
+    : `<a href="javascript:void(0)" onclick="heroProjectAction()" class="btn btn-outline btn-lg">Criar ou Entrar em projeto</a>`;
   return `
   <div class="page">
-    <section class="gradient-mesh" style="padding:76px 0 90px;position:relative;overflow:hidden;">
-      <div class="blob blob-anim" style="width:300px;height:300px;top:-80px;right:6%;background:linear-gradient(135deg,var(--green-500),var(--blue-500));opacity:0.15;"></div>
-      <div class="blob blob-anim" style="width:200px;height:200px;bottom:-50px;left:2%;background:linear-gradient(135deg,var(--orange-600),var(--green-500));opacity:0.12;animation-delay:-5s;"></div>
-      <div class="shape-ring" style="width:80px;height:80px;top:20%;right:20%;"></div>
-      <div class="shape-leaf" style="font-size:40px;top:10%;left:5%;">🍃</div>
-      <div class="shape-dot" style="width:12px;height:12px;top:60%;left:12%;"></div>
+    <section style="padding:64px 0 90px;position:relative;overflow:hidden;background:var(--ink-50);">
       <div class="container" style="position:relative;z-index:1;">
-        <div class="grid" style="grid-template-columns:1.1fr .9fr;gap:56px;align-items:center;">
+        <div class="grid" style="grid-template-columns:1fr .95fr;gap:56px;align-items:center;">
           <div>
-            <div class="eyebrow">${icon('leaf', 14)} 6 a 7 de abril de 2026 · ETEC Maria Cristina Medeiros</div>
-            <h1 style="font-size:clamp(34px,5vw,58px);font-weight:900;line-height:1.05;margin-bottom:20px;">
-              Feira Tecnológica <br><span class="gradient-text-anim" style="background:linear-gradient(135deg,var(--green-600),var(--blue-600),var(--orange-600),var(--green-600));-webkit-background-clip:text;background-clip:text;color:transparent;">e Sustentável</span>
+            <span class="badge badge-solid-red" style="margin-bottom:22px;">ETEC MCM APRESENTA</span>
+            <h1 style="font-size:clamp(32px,4.6vw,50px);font-weight:900;line-height:1.12;margin-bottom:20px;color:var(--ink-900);">
+              Feira Tecnológica <span style="color:var(--green-600);">Sustentável</span> da ETEC MCM
             </h1>
-            <p style="font-size:17.5px;color:var(--ink-500);max-width:520px;line-height:1.65;margin-bottom:32px;">
-              A plataforma oficial que reúne todos os projetos, cronograma, mapa e votação popular da maior feira de inovação da nossa escola.
+            <p style="font-size:16.5px;color:var(--ink-500);max-width:480px;line-height:1.65;margin-bottom:32px;">
+              Inovação, tecnologia e sustentabilidade conectadas para transformar o futuro.
             </p>
-            <div class="flex gap-16" style="flex-wrap:wrap;">
-              <a href="#/projetos" class="btn btn-primary btn-lg">${icon('grid', 18)} Conheça os projetos</a>
-              ${canUserVote() ? `<a href="#/ranking" class="btn btn-outline btn-lg">${icon('vote', 18)} Ver ranking</a>` : `<a href="#/ranking" class="btn btn-outline btn-lg">${icon('vote', 18)} Ver votação</a>`}
+            <div class="flex gap-14" style="flex-wrap:wrap;">
+              <a href="#/projetos" class="btn btn-primary btn-lg">Ver Projetos ${icon('arrowRight', 17)}</a>
+              ${heroProjectBtn}
             </div>
             <div class="flex gap-24" style="margin-top:44px;flex-wrap:wrap;">
               <div><div class="font-display" style="font-size:26px;font-weight:900;">${state.projects.length}</div><div style="font-size:13px;color:var(--ink-500);font-weight:600;">Projetos inscritos</div></div>
-              <div><div class="font-display" style="font-size:26px;font-weight:900;">${state.categories.length}</div><div style="font-size:13px;color:var(--ink-500);font-weight:600;">Categorias</div></div>
+              <div><div class="font-display" style="font-size:26px;font-weight:900;">${new Set(state.projects.map(p => p.course).filter(Boolean)).size}</div><div style="font-size:13px;color:var(--ink-500);font-weight:600;">Cursos participantes</div></div>
               <div><div class="font-display" style="font-size:26px;font-weight:900;">${totalVotes.toLocaleString('pt-BR')}</div><div style="font-size:13px;color:var(--ink-500);font-weight:600;">Votos registrados</div></div>
             </div>
           </div>
-          <div style="position:relative;">
-            <div class="card" style="padding:0;overflow:hidden;border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);">
-              <div style="height:340px;background:linear-gradient(135deg,var(--green-700),var(--blue-700) 55%,var(--orange-600));display:flex;align-items:center;justify-content:center;position:relative;">
-                <div style="position:absolute;inset:0;opacity:0.08;background-image:radial-gradient(circle,white 1.5px,transparent 1.5px);background-size:22px 22px;"></div>
-                <div class="blob" style="width:130px;height:130px;top:14px;left:14px;background:rgba(255,255,255,0.10);"></div>
-                <div style="font-size:110px;position:relative;">🌿</div>
-              </div>
+          <div style="position:relative;height:420px;">
+            <div style="position:absolute;inset:0;border-radius:var(--radius-lg);overflow:hidden;background:linear-gradient(150deg,var(--green-800),var(--green-600) 60%,var(--orange-600));box-shadow:var(--shadow-lg);">
+              <div style="position:absolute;inset:0;opacity:0.10;background-image:radial-gradient(circle,white 1.5px,transparent 1.5px);background-size:22px 22px;"></div>
             </div>
-            <div class="card card-pad hover-lift" style="position:absolute;bottom:-24px;left:-24px;width:220px;box-shadow:var(--shadow-lg);background:rgba(255,255,255,0.9);backdrop-filter:blur(4px);">
+            ${[
+              { t: '18%', l: '62%', s: '84px' }, { t: '4%', l: '30%', s: '64px' }, { t: '38%', l: '4%', s: '72px' },
+              { t: '58%', l: '58%', s: '80px' }, { t: '34%', l: '76%', s: '58px' }, { t: '68%', l: '20%', s: '62px' },
+            ].map(b => `<div style="position:absolute;top:${b.t};left:${b.l};width:${b.s};height:${b.s};background:rgba(255,255,255,0.92);border-radius:26px;box-shadow:var(--shadow-md);"></div>`).join('')}
+            <div style="position:absolute;top:14%;left:44%;width:130px;height:130px;background:var(--green-700);border-radius:32px;box-shadow:var(--shadow-glow-red-lg);display:flex;align-items:center;justify-content:center;">
+              ${icon('leaf', 44)}
+            </div>
+            <div class="card card-pad hover-lift" style="position:absolute;bottom:-22px;left:-20px;width:220px;box-shadow:var(--shadow-lg);z-index:2;">
               <div class="flex items-center gap-12">
                 <div style="width:44px;height:44px;border-radius:12px;background:var(--green-100);display:flex;align-items:center;justify-content:center;color:var(--green-700);">${icon('trophy', 22)}</div>
                 <div><div style="font-weight:800;font-size:15px;">${featured[0]?.name?.split(' — ')[0] || 'Nenhum'}</div><div style="font-size:12px;color:var(--ink-500);">Projeto líder no ranking</div></div>
@@ -1356,7 +1375,7 @@ function pageHome() {
       <div class="grid" style="grid-template-columns:repeat(4,1fr);gap:20px;">
         ${statCard('cpu', approvedCount, 'Projetos aprovados', 'green')}
         ${statCard('users', '1.240', 'Visitantes esperados', 'blue')}
-        ${statCard('layers', state.categories.length, 'Categorias temáticas', 'green')}
+        ${statCard('layers', new Set(state.projects.map(p => p.course).filter(Boolean)).size, 'Cursos participantes', 'green')}
         ${statCard('vote', totalVotes.toLocaleString('pt-BR'), 'Votos populares', 'orange')}
       </div>
     </section>
@@ -1398,16 +1417,6 @@ function pageHome() {
       </div>
     </section>
 
-    <section class="section-tight container">
-      <div class="card" style="padding:48px;background:linear-gradient(120deg,var(--green-900),#2C4C6B 55%,#B3541A);color:white;text-align:center;border:none;position:relative;overflow:hidden;">
-        <div style="position:absolute;inset:0;opacity:0.06;background-image:radial-gradient(circle,white 1.5px,transparent 1.5px);background-size:24px 24px;"></div>
-        <h2 style="color:white;font-size:28px;margin-bottom:12px;position:relative;">Apoiadores e parceiros</h2>
-        <p style="color:var(--blue-100);max-width:500px;margin:0 auto 28px;position:relative;">Empresas e instituições que acreditam na inovação estudantil.</p>
-        <div class="flex justify-between" style="max-width:600px;margin:0 auto;position:relative;flex-wrap:wrap;gap:20px;">
-          ${['TechCorp', 'GreenEnergy', 'DevSchool', 'CloudBR'].map(n => `<div style="font-family:var(--font-display);font-weight:700;font-size:17px;color:white;opacity:.85;">${n}</div>`).join('')}
-        </div>
-      </div>
-    </section>
   </div>`;
 }
 
@@ -1421,7 +1430,6 @@ function statCard(iconName, num, lbl, color) {
 }
 
 function projectCard(p) {
-  const cat = categoryOf(p.category);
   const coverStyle = p.cover
     ? `background:center/cover no-repeat url('${p.cover}');`
     : `background:linear-gradient(135deg,var(--green-50),var(--blue-50));`;
@@ -1429,7 +1437,6 @@ function projectCard(p) {
   <a href="#/projeto/${p.id}" class="card card-hover" style="overflow:hidden;display:block;">
     <div style="height:150px;${coverStyle}display:flex;align-items:center;justify-content:center;font-size:100px;position:relative;">
       ${p.cover ? '' : p.image}
-      <div class="badge badge-${cat?.color || 'blue'}" style="position:absolute;top:12px;left:12px;">${cat?.name || 'Categoria'}</div>
       ${p.status === 'pendente' ? `<div class="badge badge-amber" style="position:absolute;top:12px;right:12px;">Pendente</div>` : ''}
     </div>
     <div class="card-pad">
@@ -1466,51 +1473,45 @@ function pageProjects() {
   return `
   <div class="page section container">
     <div class="breadcrumb"><a href="#/home">Início</a><span class="sep">${icon('chevronRight', 13)}</span><span>Projetos</span></div>
-    <div class="flex justify-between items-center" style="margin-bottom:8px;flex-wrap:wrap;gap:12px;">
+    <div class="flex justify-between items-start" style="margin-bottom:24px;flex-wrap:wrap;gap:12px;">
       <div>
-        <h1 class="section-title" style="margin-bottom:6px;">Catálogo de Projetos</h1>
-        <p class="section-sub">Explore todos os projetos inscritos na Feira Tech 2026.</p>
+        <h1 class="section-title" style="margin-bottom:6px;">Projetos da Feira</h1>
+        <p class="section-sub" style="margin:0;max-width:560px;">Explore os projetos inscritos, conheça as equipes e localize cada estande no dia do evento.</p>
       </div>
       <div class="flex gap-10" style="flex-wrap:wrap;">
         <button class="btn btn-outline" onclick="openFindProjectModal()">${icon('search', 17)} Encontrar meu projeto</button>
         ${state.currentUser?.role === 'aluno' ? `<a href="#/cadastro-projeto" class="btn btn-secondary">${icon('plus', 17)} Cadastrar projeto</a>` : ''}
       </div>
     </div>
-    <div class="card card-pad" style="margin:28px 0;position:sticky;top:88px;z-index:50;background:rgba(255,255,255,0.85);backdrop-filter:blur(12px);">
-      <div class="input-icon-wrap" style="margin-bottom:16px;">
-        ${icon('search', 18)}<input class="input" placeholder="Buscar por nome, tecnologia ou palavra-chave…" value="${escapeHtml(state.filters.search)}" oninput="updateFilter('search',this.value)">
+    <div class="flex gap-12" style="flex-wrap:wrap;margin-bottom:16px;">
+      <div class="input-icon-wrap" style="flex:1;min-width:240px;">
+        ${icon('search', 18)}<input class="input" placeholder="Buscar por nome do projeto…" value="${escapeHtml(state.filters.search)}" oninput="updateFilter('search',this.value)">
       </div>
-      <div class="flex gap-8" style="flex-wrap:wrap;margin-bottom:14px;">
-        <button class="chip-filter ${state.filters.category === 'all' ? 'active' : ''}" onclick="updateFilter('category','all')">Todas categorias</button>
-        ${state.categories.map(c => `<button class="chip-filter ${state.filters.category === c.id ? 'active' : ''}" onclick="updateFilter('category','${c.id}')">${escapeHtml(c.name)}</button>`).join('')}
-      </div>
-      <div class="flex justify-between items-center" style="flex-wrap:wrap;gap:12px;">
-        <div class="flex gap-12" style="flex-wrap:wrap;">
-          <select class="select" style="width:auto;" onchange="updateFilter('course',this.value)">
-            <option value="all">Todos os cursos</option>
-            ${MOCK.courses.map(c => `<option value="${c}" ${state.filters.course === c ? 'selected' : ''}>${c}</option>`).join('')}
-          </select>
-          <select class="select" style="width:auto;" onchange="updateFilter('status',this.value)">
-            <option value="all" ${state.filters.status === 'all' ? 'selected' : ''}>Todos os status</option>
-            <option value="aprovado" ${state.filters.status === 'aprovado' ? 'selected' : ''}>Aprovados</option>
-            <option value="pendente" ${state.filters.status === 'pendente' ? 'selected' : ''}>Pendentes</option>
-          </select>
-        </div>
-        <select class="select" style="width:auto;" onchange="updateFilter('sort',this.value)">
-          <option value="votes" ${state.filters.sort === 'votes' ? 'selected' : ''}>Mais votados</option>
-          <option value="recent" ${state.filters.sort === 'recent' ? 'selected' : ''}>Mais recentes</option>
-          <option value="az" ${state.filters.sort === 'az' ? 'selected' : ''}>A – Z</option>
-        </select>
-      </div>
+      <select class="select" style="width:auto;" onchange="updateFilter('course',this.value)">
+        <option value="all" ${state.filters.course === 'all' ? 'selected' : ''}>Todas as turmas</option>
+        ${MOCK.courses.map(c => `<option value="${c}" ${state.filters.course === c ? 'selected' : ''}>${c}</option>`).join('')}
+      </select>
     </div>
     <div id="projects-grid-wrap">${renderProjectsGrid()}</div>
+  </div>`;
+}
+function projectListCard(p) {
+  const nota = Math.min(10, ((p.votes || 0) / 60) + 5).toFixed(1);
+  return `
+  <div class="card card-pad card-hover" style="display:flex;flex-direction:column;">
+    <div style="font-size:11.5px;font-weight:700;letter-spacing:.03em;color:var(--ink-300);text-transform:uppercase;margin-bottom:8px;">Turma ${escapeHtml(p.turma || '')} — ${escapeHtml(p.course || '')}</div>
+    <h4 style="font-size:16.5px;line-height:1.35;margin-bottom:18px;flex:1;">${escapeHtml(p.name)}</h4>
+    <div class="flex gap-20" style="margin-bottom:16px;">
+      <div><div style="font-weight:800;font-size:18px;color:var(--green-700);">${p.votes || 0}</div><div style="font-size:11px;color:var(--ink-300);font-weight:600;letter-spacing:.03em;">VOTOS</div></div>
+      <div><div style="font-weight:800;font-size:18px;color:var(--green-700);">${nota}</div><div style="font-size:11px;color:var(--ink-300);font-weight:600;letter-spacing:.03em;">NOTA</div></div>
+    </div>
+    <a href="#/projeto/${p.id}" class="btn btn-primary btn-block">Ver Detalhes</a>
   </div>`;
 }
 function filteredProjects() {
   let list = [...state.projects];
   const f = state.filters;
   if (f.search) list = list.filter(p => (p.name + p.summary + (p.tech || []).join(' ')).toLowerCase().includes(f.search.toLowerCase()));
-  if (f.category !== 'all') list = list.filter(p => p.category === f.category);
   if (f.course !== 'all') list = list.filter(p => p.course === f.course);
   if (f.status !== 'all') list = list.filter(p => p.status === f.status);
   if (f.sort === 'votes') list.sort((a, b) => (b.votes || 0) - (a.votes || 0));
@@ -1521,19 +1522,15 @@ function filteredProjects() {
 function renderProjectsGrid() {
   const list = filteredProjects();
   if (!list.length) return `<div class="empty-state">${icon('search', 44)}<h3>Nenhum projeto encontrado</h3><p>Tente ajustar os filtros ou o termo de busca.</p><button class="btn btn-outline" style="margin-top:16px;" onclick="resetFilters()">Limpar filtros</button></div>`;
-  return `<div class="grid" style="grid-template-columns:repeat(3,1fr);gap:22px;">${list.map(projectCard).join('')}</div>
-  <div style="text-align:center;margin-top:8px;color:var(--ink-500);font-size:13.5px;">Mostrando ${list.length} de ${state.projects.length} projetos</div>`;
+  return `<div style="font-size:13px;color:var(--ink-500);font-weight:600;margin-bottom:16px;">${list.length} projeto${list.length === 1 ? '' : 's'} encontrado${list.length === 1 ? '' : 's'}</div>
+  <div class="grid" style="grid-template-columns:repeat(3,1fr);gap:22px;">${list.map(projectListCard).join('')}</div>`;
 }
 function updateFilter(key, val) {
   state.filters[key] = val;
   $('#projects-grid-wrap').innerHTML = renderProjectsGrid();
-  if (key === 'category') {
-    $all('.chip-filter').forEach(b => b.classList.remove('active'));
-    if (event && event.target) event.target.classList.add('active');
-  }
 }
 function resetFilters() {
-  state.filters = { search: '', category: 'all', course: 'all', status: 'all', sort: 'votes' };
+  state.filters = { search: '', course: 'all', status: 'all', sort: 'votes' };
   render();
 }
 
@@ -1541,7 +1538,6 @@ function resetFilters() {
 function pageProjectDetail(id) {
   const p = state.projects.find(x => x.id === id);
   if (!p) return page404();
-  const cat = categoryOf(p.category);
   const teacher = teacherOf(p.teacher, p.teacherName);
   const stand = standOf(p.stand);
   const hasVoted = state.votedProjects.has(p.id);
@@ -1562,13 +1558,6 @@ function pageProjectDetail(id) {
           }"
         >
           ${p.cover ? '' : p.image}
-
-          <div
-            class="badge badge-${cat?.color || 'blue'}"
-            style="position:absolute;top:16px;left:16px;"
-          >
-          ${cat?.name || 'Categoria'}
-        </div>
       </div>
         <div class="flex gap-8" style="margin-bottom:8px;">
           <span class="badge badge-${p.status === 'aprovado' ? 'green' : 'amber'}">${p.status === 'aprovado' ? 'Aprovado' : 'Pendente'}</span>
@@ -1617,9 +1606,13 @@ function pageProjectDetail(id) {
       </div>
       <div>
         <div class="card card-pad" style="margin-bottom:20px;">
-          <div class="flex justify-between items-center" style="margin-bottom:14px;">
-            <span style="font-weight:700;font-size:14px;">Votação popular</span>
-            <span class="badge badge-green">${p.votes || 0} votos</span>
+          <div style="font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-500);margin-bottom:6px;">Votação popular</div>
+          <div class="flex items-center gap-16" style="margin-bottom:16px;">
+            <span style="font-size:26px;color:var(--green-600);">${icon('vote', 30)}</span>
+            <div>
+              <div style="font-weight:900;font-size:32px;line-height:1;color:var(--ink-900);">${p.votes || 0}</div>
+              <div style="font-size:11.5px;color:var(--ink-300);font-weight:700;letter-spacing:.03em;">VOTOS RECEBIDOS</div>
+            </div>
           </div>
           ${canUserVote() ? `
             <button class="btn ${hasVoted ? 'btn-outline' : 'btn-secondary'} btn-block" onclick="voteProject('${p.id}')" ${hasVoted ? 'disabled' : ''}>
@@ -1629,7 +1622,32 @@ function pageProjectDetail(id) {
           ` : `
             <div class="field-hint" style="text-align:center;color:var(--ink-500);padding:12px 4px 0;">A votação permanece visível para alunos, mas o envio de votos está restrito a visitantes.</div>
           `}
+          <hr class="divider" style="margin:16px 0;">
+          <div style="font-weight:700;font-size:13px;margin-bottom:10px;">Quem votou</div>
+          ${p.votes ? `<div class="field-hint">O painel de votantes é privado e visível apenas para a organização.</div>` : `<p style="font-size:13px;color:var(--ink-300);">Seu projeto ainda não recebeu votos.</p>`}
         </div>
+        <div class="card card-pad" style="margin-bottom:20px;">
+          <div style="font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-500);margin-bottom:14px;">Avaliação Professor</div>
+          <div class="flex-col gap-10" style="display:flex;">
+            ${(state.teachers && state.teachers.length ? state.teachers : MOCK.teachers).filter(t => t.turma).map(t => {
+              const given = (p.evaluations || []).find(ev => ev.teacherId === t.id);
+              return `
+              <div class="flex justify-between items-center" style="padding:8px 0;border-bottom:1px solid var(--ink-100);">
+                <span style="font-size:13.5px;font-weight:600;">${escapeHtml(t.name)}</span>
+                <div class="flex gap-6">
+                  ${['I', 'R', 'B', 'MB'].map(lv => `<span class="badge" style="width:26px;justify-content:center;padding:5px 0;${given && given.level === lv ? 'background:var(--green-600);color:white;' : 'background:var(--ink-50);color:var(--ink-300);'}">${lv}</span>`).join('')}
+                </div>
+              </div>`;
+            }).join('')}
+          </div>
+          <div class="field-hint" style="margin-top:12px;">I · Insuficiente — R · Regular — B · Bom — MB · Muito Bom</div>
+        </div>
+        ${(state.currentUser && p.criadoPor === state.currentUser.id) ? `
+        <div class="card card-pad" style="margin-bottom:20px;border:1px dashed var(--ink-200);">
+          <div class="flex items-center gap-8" style="margin-bottom:10px;">${icon('lock', 16)}<strong style="font-size:14px;">Acesso da equipe</strong></div>
+          <p style="font-size:13px;color:var(--ink-500);margin-bottom:14px;">Só você, como criador(a), vê esta opção. A chave e a senha servem para outros integrantes entrarem no projeto.</p>
+          <button class="btn btn-outline btn-block" onclick="openProjectAccessModal('${p.id}')">${icon('eye', 16)} Ver chave e senha de acesso</button>
+        </div>` : ''}
         <div class="card card-pad" style="margin-bottom:20px;">
           <div style="font-weight:700;font-size:14px;margin-bottom:16px;">Equipe</div>
           <div class="flex-col gap-12" style="display:flex;">
@@ -1642,7 +1660,6 @@ function pageProjectDetail(id) {
         <div class="card card-pad" style="margin-bottom:20px;">
           <div style="font-weight:700;font-size:14px;margin-bottom:14px;">Informações</div>
           <div class="flex justify-between" style="font-size:13.5px;padding:8px 0;border-bottom:1px solid var(--ink-100);"><span style="color:var(--ink-500);">Curso</span><strong>${escapeHtml(p.course)}</strong></div>
-          <div class="flex justify-between" style="font-size:13.5px;padding:8px 0;border-bottom:1px solid var(--ink-100);"><span style="color:var(--ink-500);">Categoria</span><strong>${cat?.name || '?'}</strong></div>
           ${p.ods ? `<div class="flex justify-between" style="font-size:13.5px;padding:8px 0;border-bottom:1px solid var(--ink-100);"><span style="color:var(--ink-500);">ODS</span><strong style="text-align:right;max-width:60%;">${escapeHtml(p.ods)}</strong></div>` : ''}
           <div class="flex justify-between" style="font-size:13.5px;padding:8px 0;border-bottom:1px solid var(--ink-100);"><span style="color:var(--ink-500);">Estande</span><strong>${stand?.code || '?'}</strong></div>
           <div class="flex justify-between" style="font-size:13.5px;padding:8px 0;"><span style="color:var(--ink-500);">Inscrito em</span><strong>${fmtDate(p.createdAt)}</strong></div>
@@ -1783,8 +1800,8 @@ function pageRanking() {
       </div>
       <div>
         <div class="card card-pad" style="margin-bottom:20px;">
-          <div style="font-weight:700;margin-bottom:16px;">Votos por categoria</div>
-          <canvas id="chart-cat-votes" height="220"></canvas>
+          <div style="font-weight:700;margin-bottom:16px;">Votos por curso</div>
+          <canvas id="chart-course-votes" height="220"></canvas>
         </div>
         <div class="card card-pad" style="background:var(--green-50);border-color:var(--green-100);">
           <div class="flex items-center gap-12" style="margin-bottom:10px;">${icon('info', 18)}<strong style="font-size:14px;">Como funciona</strong></div>
@@ -1794,14 +1811,15 @@ function pageRanking() {
     </div>
   </div>`;
 }
-function renderCategoryVotesChart() {
-  const canvas = $('#chart-cat-votes');
+function renderCourseVotesChart() {
+  const canvas = $('#chart-course-votes');
   if (!canvas || typeof Chart === 'undefined') return;
-  const data = state.categories.map(c => state.projects.filter(p => p.category === c.id).reduce((s, p) => s + (p.votes || 0), 0));
+  const courses = [...new Set(state.projects.map(p => p.course).filter(Boolean))];
+  const data = courses.map(c => state.projects.filter(p => p.course === c).reduce((s, p) => s + (p.votes || 0), 0));
   new Chart(canvas, {
     type: 'doughnut',
     data: {
-      labels: state.categories.map(c => c.name),
+      labels: courses,
       datasets: [{ data, backgroundColor: ['#DC2430', '#3E6B8C', '#E76F51', '#F2465A', '#5B8FAF', '#F48C6E'], borderWidth: 0 }]
     },
     options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 }, padding: 12 } } }, cutout: '62%' }
@@ -1871,9 +1889,8 @@ function showStandInfo(standId) {
     panel.innerHTML = `<div class="empty-state" style="padding:40px 10px;">${icon('building', 36)}<h3 style="font-size:15px;">Estande ${stand?.code || '?'}</h3><p style="font-size:13px;">Nenhum projeto alocado neste estande no momento.</p></div>`;
     return;
   }
-  const cat = categoryOf(p.category);
   panel.innerHTML = `
-    <div class="badge badge-${cat?.color || 'blue'}" style="margin-bottom:12px;">Estande ${stand?.code || '?'}</div>
+    <div class="badge badge-green" style="margin-bottom:12px;">Estande ${stand?.code || '?'}</div>
     <div style="font-size:44px;margin-bottom:10px;">${p.image}</div>
     <h3 style="font-size:17px;margin-bottom:8px;">${escapeHtml(p.name)}</h3>
     <p style="font-size:13.5px;color:var(--ink-500);line-height:1.6;margin-bottom:16px;">${escapeHtml(p.summary)}</p>
@@ -1881,31 +1898,52 @@ function showStandInfo(standId) {
     <a href="#/projeto/${p.id}" class="btn btn-primary btn-block">Ver projeto completo</a>`;
 }
 
-// NOTÍCIAS
+// AVISOS
+const AVISO_LEVELS = {
+  critico: { label: 'Crítico', border: 'var(--green-600)', badge: 'badge-critico' },
+  aviso: { label: 'Aviso', border: 'var(--orange-600)', badge: 'badge-orange' },
+  aprovado: { label: 'Aprovado', border: '#2E9E5B', badge: 'badge-green' },
+  informacao: { label: 'Informação', border: 'var(--blue-600)', badge: 'badge-blue' },
+  lembranca: { label: 'Lembrança', border: 'var(--ink-300)', badge: 'badge-gray' },
+};
 function pageNews() {
   return `
   <div class="page section container">
-    <div class="breadcrumb"><a href="#/home">Início</a><span class="sep">${icon('chevronRight', 13)}</span><span>Notícias</span></div>
+    <div class="breadcrumb"><a href="#/home">Início</a><span class="sep">${icon('chevronRight', 13)}</span><span>Avisos</span></div>
     <div class="eyebrow">${icon('news', 14)} Comunicação oficial</div>
-    <h1 class="section-title">Notícias da Feira Tech</h1>
-    <p class="section-sub" style="margin-bottom:36px;">Fique por dentro de tudo o que acontece na organização do evento.</p>
-    <div class="grid" style="grid-template-columns:repeat(2,1fr);gap:24px;">
-      ${state.news.map(n => `
-      <div class="card card-hover" style="overflow:hidden;">
-        <div style="height:160px;background:linear-gradient(135deg,var(--ink-900),var(--green-700));display:flex;align-items:center;justify-content:center;">${icon('news', 40)}</div>
-        <div class="card-pad">
-          <div class="flex items-center gap-8" style="margin-bottom:12px;">
-            <span class="badge badge-green">${escapeHtml(n.category)}</span>
-            <span style="font-size:12.5px;color:var(--ink-300);">${fmtDate(n.date)}</span>
+    <h1 class="section-title" style="margin-bottom:8px;">Avisos da organização</h1>
+    <p class="section-sub" style="margin-bottom:32px;">Fique por dentro de tudo o que acontece na organização do evento.</p>
+
+    <div class="flex-col gap-16" style="display:flex;margin-bottom:56px;">
+      ${state.news.map(n => {
+        const lv = AVISO_LEVELS[n.level] || AVISO_LEVELS.informacao;
+        return `
+        <div class="card card-pad" style="border-left:4px solid ${lv.border};">
+          <div class="flex justify-between items-start" style="gap:16px;margin-bottom:6px;">
+            <div style="font-size:12px;color:var(--ink-300);">${fmtDate(n.date)} · ${escapeHtml(n.author)}</div>
+            <span class="badge ${lv.badge}">${lv.label}</span>
           </div>
-          <h3 style="font-size:18px;margin-bottom:10px;line-height:1.35;">${escapeHtml(n.title)}</h3>
-          <div style="font-size:14px;color:var(--ink-500);line-height:1.6;margin-bottom:16px;">${escapeHtml(n.excerpt)}</div>
-          <div class="flex justify-between items-center">
-            <span style="font-size:13px;color:var(--ink-500);">Por ${escapeHtml(n.author)}</span>
-            <button class="btn btn-ghost btn-sm" onclick="toast('${n.comments || 0} comentários nesta notícia','info')">💬 ${n.comments || 0}</button>
+          <h3 style="font-size:16.5px;margin-bottom:8px;line-height:1.35;">${escapeHtml(n.title)}</h3>
+          <p style="font-size:13.5px;color:var(--ink-500);line-height:1.6;margin-bottom:14px;">${escapeHtml(n.excerpt)}</p>
+          <div class="flex gap-10">
+            <button class="btn btn-outline btn-sm" onclick="toast('${n.comments || 0} comentários nesta notícia','info')">${icon('external', 14)} Detalhes</button>
+            <button class="btn btn-ghost btn-sm" onclick="toast('Marcado como lido','success')">${icon('check', 14)} Marcar como lida</button>
           </div>
-        </div>
-      </div>`).join('')}
+        </div>`;
+      }).join('')}
+    </div>
+
+    <div class="eyebrow">${icon('calendar', 14)} Programação</div>
+    <h2 class="section-title" style="margin-bottom:28px;">Cronograma do evento</h2>
+    <div class="card card-pad">
+      ${state.schedule.map((s, i) => `
+        <div class="flex items-center gap-16" style="padding:14px 4px;${i < state.schedule.length - 1 ? 'border-bottom:1px solid var(--ink-100);' : ''}">
+          <div style="font-weight:800;color:var(--green-700);font-size:14.5px;width:64px;flex-shrink:0;">${s.time}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:600;font-size:14.5px;">${escapeHtml(s.title)}</div>
+            <div style="font-size:12.5px;color:var(--ink-500);">${fmtDate(s.date)} · ${icon('pin', 12)} ${escapeHtml(s.location)}</div>
+          </div>
+        </div>`).join('')}
     </div>
   </div>`;
 }
@@ -1974,25 +2012,29 @@ function pageProfile() {
           <p style="font-size:13.5px;color:var(--ink-500);margin-bottom:14px;">Excluir sua conta é uma ação permanente. Seus dados de login, comentários, votos e notificações serão apagados. Seus projetos cadastrados continuarão disponíveis no catálogo, mas deixarão de ter um responsável vinculado.</p>
           <button type="button" class="btn btn-outline btn-sm" style="color:var(--orange-600);border-color:var(--orange-300,#f5b26b);" onclick="deleteMyAccount()">${icon('trash', 15)} Excluir minha conta</button>
         </div>
-        ${u.role === 'aluno' ? `
-        <div class="card card-pad">
-          <div class="flex justify-between items-center" style="margin-bottom:14px;">
-            <h3 style="font-size:16px;margin:0;">${icon('cpu', 17)} Meus projetos (${myProjects.length})</h3>
-            <a href="#/cadastro-projeto" class="btn btn-secondary btn-sm">${icon('plus', 15)} Novo projeto</a>
-          </div>
-          ${myProjects.length ? myProjects.map(p => {
-            const isOwner = p.criadoPor === u.id;
+        ${u.role === 'aluno' ? (() => {
+          const myProject = getStudentProject(u.id);
+          if (!myProject) {
             return `
-            <div class="flex justify-between items-center" style="padding:10px 0;border-bottom:1px solid var(--ink-100);">
-              <a href="#/projeto/${p.id}" style="font-weight:600;font-size:14px;">${escapeHtml(p.name)}</a>
-              <div class="flex items-center gap-8">
-                <span class="badge badge-green">${p.votes || 0} votos</span>
-                ${isOwner ? `<button class="btn btn-ghost btn-sm" onclick="openEditProjectModal('${p.id}')">${icon('edit', 15)}</button>
-                <button class="btn btn-ghost btn-sm" style="color:var(--orange-600);" onclick="deleteMyProject('${p.id}')">${icon('trash', 15)}</button>` : ''}
-              </div>
-            </div>`;
-          }).join('') : `<p style="font-size:13.5px;color:var(--ink-300);">Você ainda não cadastrou nenhum projeto.</p>`}
-        </div>` : ''}
+        <div class="card card-pad" style="text-align:center;">
+          <div style="width:44px;height:44px;border-radius:12px;background:var(--green-100);color:var(--green-700);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">${icon('cpu', 20)}</div>
+          <h3 style="font-size:15.5px;margin-bottom:6px;">Você ainda não tem um projeto</h3>
+          <p style="font-size:13.5px;color:var(--ink-500);margin-bottom:16px;">Cada aluno pode participar de apenas um projeto por vez.</p>
+          <a href="#/cadastro-projeto" class="btn btn-primary btn-sm">${icon('plus', 15)} Cadastrar projeto</a>
+        </div>`;
+          }
+          const isOwner = myProject.criadoPor === u.id;
+          return `
+        <div class="card card-pad">
+          <div style="font-weight:700;margin-bottom:14px;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-300);">Meu projeto</div>
+          <h3 style="font-size:17px;margin-bottom:14px;">${escapeHtml(myProject.name)}</h3>
+          <div class="flex gap-8" style="flex-wrap:wrap;">
+            <a href="#/projeto/${myProject.id}" class="btn btn-primary btn-sm">${icon('eye', 15)} Ver projeto</a>
+            ${isOwner ? `<button class="btn btn-outline btn-sm" onclick="openEditProjectModal('${myProject.id}')">${icon('edit', 15)} Editar</button>
+            <button class="btn btn-ghost btn-sm" style="color:var(--orange-600);" onclick="deleteMyProject('${myProject.id}')">${icon('trash', 15)} Excluir</button>` : ''}
+          </div>
+        </div>`;
+        })() : ''}
       </div>
     </div>
   </div>`;
@@ -2095,6 +2137,16 @@ function pageCadastroProjeto() {
   if (!state.currentUser || state.currentUser.role !== 'aluno') return requireLoginPage('Área exclusiva para alunos.');
   const u = state.currentUser;
 
+  const existingProject = getStudentProject(u.id);
+  if (existingProject) {
+    return `<div class="page section container" style="text-align:center;padding:100px 20px;">
+      <div style="width:80px;height:80px;border-radius:50%;background:var(--green-100);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;color:var(--green-700);">${icon('cpu', 34)}</div>
+      <h2 style="margin-bottom:10px;">Você já participa de um projeto</h2>
+      <p class="section-sub" style="margin:0 auto 28px;">Cada aluno pode participar de apenas um projeto por vez. Você já é ${existingProject.criadoPor === u.id ? 'o(a) criador(a)' : 'integrante'} de <strong>${escapeHtml(existingProject.name)}</strong>.</p>
+      <a href="#/projeto/${existingProject.id}" class="btn btn-primary btn-lg">${icon('eye', 18)} Ver meu projeto</a>
+    </div>`;
+  }
+
   // O curso e a turma do aluno já vêm do cadastro/perfil, então não há
   // campos manuais de período/turma no formulário de projeto.
   if (!u.curso || !u.turma) {
@@ -2109,6 +2161,7 @@ function pageCadastroProjeto() {
   pendingCadastro = { cover: null, coverName: '', coverSize: 0, doc: null, docName: '', docSize: 0 };
   const draft = loadCadastroDraft();
   const teachers = (state.teachers && state.teachers.length ? state.teachers : MOCK.teachers);
+  const suggestedTeacherId = MOCK.turmaProfessorTarde[u.turma] || '';
   const initialDescLen = (draft?.descricao || '').length;
   const initialCounterCls = initialDescLen >= 100 && initialDescLen <= 1000 ? 'ok' : (initialDescLen > 0 ? 'warn' : '');
 
@@ -2147,8 +2200,9 @@ function pageCadastroProjeto() {
           <label>Professor orientador *</label>
           <select class="select" name="professor" required>
             <option value="">Selecione o professor…</option>
-            ${teachers.map(t => `<option value="${t.id}" ${draft?.professor === t.id ? 'selected' : ''}>${escapeHtml(t.name)}${t.course ? ' · ' + escapeHtml(t.course) : ''}</option>`).join('')}
+            ${teachers.map(t => `<option value="${t.id}" ${(draft?.professor ? draft.professor === t.id : suggestedTeacherId === t.id) ? 'selected' : ''}>${escapeHtml(t.name)}${t.course ? ' · ' + escapeHtml(t.course) : ''}</option>`).join('')}
           </select>
+          ${suggestedTeacherId && !draft?.professor ? `<div class="field-hint" style="margin-top:8px;">${icon('info', 13)} Orientador(a) sugerido(a) para a turma ${escapeHtml(u.turma)}.</div>` : ''}
         </div>
 
         <div class="field" style="margin-bottom:0;">
@@ -2417,6 +2471,57 @@ function openProjectCreatedModal(id, senha) {
     </div>
   `);
 }
+// Modal exclusivo do criador do projeto: mostra a chave (id) sempre, e
+// permite gerar uma NOVA senha de acesso (a antiga é hash e não pode ser
+// "lida de novo" — por isso a opção é gerar uma nova, exibida uma única vez).
+function openProjectAccessModal(id) {
+  const p = state.projects.find(x => x.id === id);
+  if (!p || !state.currentUser || p.criadoPor !== state.currentUser.id) {
+    toast('Apenas o criador do projeto pode ver esses dados.', 'error');
+    return;
+  }
+  openModal(`
+    <div class="modal-header">
+      <h3 class="font-display" style="font-size:19px;">Chave e senha de acesso</h3>
+      <button class="modal-close" onclick="closeModal()">${icon('close', 18)}</button>
+    </div>
+    <div class="modal-body">
+      <p class="field-hint" style="margin-bottom:18px;">Compartilhe esses dados apenas com integrantes do seu projeto.</p>
+      <div class="credential-box" style="margin-bottom:14px;">
+        <div class="credential-meta">
+          <div class="credential-label">Chave do projeto</div>
+          <div class="credential-value">${escapeHtml(id)}</div>
+        </div>
+        <button type="button" class="credential-copy" onclick="copyCredential('${id}', this)">${icon('copy', 16)}</button>
+      </div>
+      <div id="project-access-password-area">
+        <p class="field-hint" style="margin-bottom:14px;">${icon('info', 12)} Por segurança, a senha original não pode ser exibida de novo. Você pode gerar uma nova senha agora — a antiga deixará de funcionar.</p>
+        <button class="btn btn-primary btn-block" onclick="handleResetProjectPassword('${id}')">${icon('refresh', 16)} Gerar nova senha de acesso</button>
+      </div>
+    </div>
+  `);
+}
+async function handleResetProjectPassword(id) {
+  if (!state.currentUser) return;
+  const area = $('#project-access-password-area');
+  try {
+    const result = await dataManager.resetProjectPassword(id, state.currentUser.id);
+    if (result.success) {
+      area.innerHTML = `
+        <div class="credential-box" style="margin-bottom:6px;">
+          <div class="credential-meta">
+            <div class="credential-label">Nova senha de acesso</div>
+            <div class="credential-value">${escapeHtml(result.senha)}</div>
+          </div>
+          <button type="button" class="credential-copy" onclick="copyCredential('${result.senha}', this)">${icon('copy', 16)}</button>
+        </div>
+        <p class="field-hint">${icon('alert', 12)} Anote agora — essa senha também não poderá ser exibida de novo depois.</p>`;
+      toast('Nova senha gerada com sucesso!', 'success');
+    } else {
+      toast(result.error || 'Não foi possível gerar a nova senha.', 'error');
+    }
+  } catch (err) { toast(err.message || 'Não foi possível gerar a nova senha.', 'error'); }
+}
 function copyCredential(value, btn) {
   const done = () => { if (btn) { const prev = btn.innerHTML; btn.innerHTML = icon('check', 16); setTimeout(() => { btn.innerHTML = prev; }, 1200); } };
   if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -2458,15 +2563,17 @@ async function handleFindProjectSubmit(e) {
     if (result.success && result.project) {
       const p = result.project;
       const alreadyMember = state.currentUser && (p.criado_por === state.currentUser.id || (safeParseArray(p.membros) || []).includes(state.currentUser.id));
+      const myExisting = getStudentProject(state.currentUser?.id);
       resultBox.innerHTML = `
         <div class="card card-pad" style="margin-bottom:4px;background:var(--green-50);border-color:var(--green-100);">
           <div style="font-weight:700;fontsize:14.5px;margin-bottom:4px;">${icon('checkCircle', 15)} ${escapeHtml(p.nome)}</div>
           <div style="font-size:12.5px;color:var(--ink-500);margin-bottom:14px;">${escapeHtml(p.curso || '')} ${p.turma ? '· Turma ' + escapeHtml(p.turma) : ''}</div>
           <div class="flex gap-8">
             <a href="#/projeto/${p.id}" class="btn btn-outline btn-sm" style="flex:1;" onclick="closeModal()">${icon('eye', 14)} Ver projeto</a>
-            ${(!alreadyMember && state.currentUser && state.currentUser.role === 'aluno') ? `<button type="button" class="btn btn-secondary btn-sm" style="flex:1;" onclick="joinFoundProject('${chave.replace(/'/g, "\\'")}','${senha.replace(/'/g, "\\'")}')">${icon('users', 14)} Entrar como integrante</button>` : ''}
+            ${(!alreadyMember && !myExisting && state.currentUser && state.currentUser.role === 'aluno') ? `<button type="button" class="btn btn-secondary btn-sm" style="flex:1;" onclick="joinFoundProject('${chave.replace(/'/g, "\\'")}','${senha.replace(/'/g, "\\'")}')">${icon('users', 14)} Entrar como integrante</button>` : ''}
           </div>
           ${(!state.currentUser) ? `<p class="field-hint" style="margin-top:10px;">${icon('lock', 12)} Faça login como aluno para entrar como integrante deste projeto.</p>` : ''}
+          ${(state.currentUser && myExisting && !alreadyMember) ? `<p class="field-hint" style="margin-top:10px;">${icon('lock', 12)} Você já participa de outro projeto e não pode entrar neste.</p>` : ''}
         </div>`;
     } else {
       resultBox.innerHTML = `<p class="field-hint" style="color:var(--orange-600);margin-bottom:8px;">${icon('alert', 12)} ${escapeHtml(result.error || 'Chave ou senha incorretos.')}</p>`;
@@ -2480,6 +2587,7 @@ async function handleFindProjectSubmit(e) {
 }
 async function joinFoundProject(chave, senha) {
   if (!state.currentUser) { toast('Faça login para entrar como integrante.', 'error'); return; }
+  if (getStudentProject(state.currentUser.id)) { toast('Você já participa de outro projeto.', 'error'); return; }
   try {
     const result = await dataManager.joinProjectAsMember(chave, senha, state.currentUser.id);
     if (result.success) {
@@ -2530,12 +2638,6 @@ function openEditProjectModal(id) {
         </div>
         <div class="field"><label>Resumo curto</label><input class="input" name="resumo" value="${escapeHtml(p.summary || '')}"></div>
         <div class="field"><label>Descrição</label><textarea class="textarea" name="descricao">${escapeHtml(p.description || '')}</textarea></div>
-        <div class="field"><label>Categoria</label>
-          <select class="select" name="categoria_id">
-            <option value="">Sem categoria</option>
-            ${state.categories.map(c => `<option value="${c.id}" ${p.category === c.id ? 'selected' : ''}>${escapeHtml(c.name)}</option>`).join('')}
-          </select>
-        </div>
         <div class="field"><label>ODS</label>
           <select class="select" name="ods">
             <option value="">Selecione…</option>
@@ -2586,7 +2688,6 @@ async function handleEditProjectSubmit(e, id) {
     periodo: f.periodo.value,
     resumo: f.resumo.value.trim(),
     descricao: f.descricao.value.trim(),
-    categoria_id: f.categoria_id.value || null,
     ods: f.ods.value,
     professor_id: f.professor_id.value || null,
     team: equipeRaw ? equipeRaw.split(',').map(s => s.trim()).filter(Boolean) : [],
@@ -2714,7 +2815,7 @@ async function render() {
     }
   }
 
-  if (!state.categories || state.categories.length === 0) {
+  if (!state.projects || state.projects.length === 0) {
     await loadAllData();
   }
 
@@ -2747,7 +2848,7 @@ async function render() {
   window.scrollTo({ top: 0, behavior: 'instant' });
   routeLoaderDone();
 
-  if (path === 'ranking') setTimeout(renderCategoryVotesChart, 30);
+  if (path === 'ranking') setTimeout(renderCourseVotesChart, 30);
   if (path === 'admin') setTimeout(renderAdminCharts, 30);
   if ((path === 'projeto' || path === 'projetos') && param) setTimeout(() => loadProjectComments(param), 30);
 }

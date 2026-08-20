@@ -81,6 +81,24 @@ if (!$stmtProf->fetch()) {
     exit;
 }
 
+// Cada aluno pode participar de apenas um projeto (como criador ou membro).
+if (!empty($criado_por)) {
+    $stmtOwn = $pdo->prepare("SELECT id FROM projetos WHERE criado_por = ? LIMIT 1");
+    $stmtOwn->execute([$criado_por]);
+    if ($stmtOwn->fetch()) {
+        http_response_code(409);
+        echo json_encode(['error' => 'Você já cadastrou um projeto. Cada aluno pode participar de apenas um projeto.']);
+        exit;
+    }
+    $stmtMember = $pdo->prepare("SELECT id FROM projetos WHERE JSON_CONTAINS(membros, JSON_QUOTE(?))");
+    $stmtMember->execute([$criado_por]);
+    if ($stmtMember->fetch()) {
+        http_response_code(409);
+        echo json_encode(['error' => 'Você já é integrante de um projeto. Cada aluno pode participar de apenas um projeto.']);
+        exit;
+    }
+}
+
 $id = generateId('p');
 $resumo = $data['summary'] ?? mb_substr($descricao, 0, 140);
 $objetivos = isset($data['objectives']) ? json_encode($data['objectives']) : null;
